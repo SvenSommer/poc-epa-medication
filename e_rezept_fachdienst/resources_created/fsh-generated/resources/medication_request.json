@@ -1,11 +1,11 @@
 {
-    "id": "2ac380df-3037-4de7-ac2d-131086113c31",
+    "id": "4ba93aa6-7cd6-4a70-931a-6b45afcd5636",
     "meta": {
         "profile": [
             "https://gematik.de/fhir/epa-medication/StructureDefinition/epa-medication-request"
         ]
     },
-    "authoredOn": "2023-12-20T20:09:04.441514+00:00",
+    "authoredOn": "2023-12-20T21:16:11.541208+01:00",
     "dispenseRequest": {
         "quantity": {
             "code": "{Package}",

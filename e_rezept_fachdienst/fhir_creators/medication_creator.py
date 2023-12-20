@@ -62,6 +62,7 @@ class MedicationCreator:
 # Verwendung der Klasse
 
 if __name__ == "__main__":
+    import os
     creator = MedicationCreator()
     medication = creator.create_medication(
         medication_id="f694dc19-eeb6-42ad-af4a-2865f8a227d4",
@@ -70,5 +71,10 @@ if __name__ == "__main__":
         medication_text="Beispiel Medikament",
         form_code="tablette",
     )
+    path = "../resources_created/fsh-generated/resources"
+    if not os.path.exists(path):
+        os.makedirs(path)
+    with open(path + "/medication.json", "w") as file:
+        file.write(medication.json(indent=4))
 
     print(medication.json(indent=4))

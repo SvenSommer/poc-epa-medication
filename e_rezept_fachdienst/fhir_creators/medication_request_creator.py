@@ -8,7 +8,7 @@ from fhir.resources.dosage import Dosage
 from fhir.resources.meta import Meta
 from datetime import datetime
 from tzlocal import get_localzone
-import os
+
 
 class MedicationRequestCreator:
     @staticmethod
@@ -19,10 +19,6 @@ class MedicationRequestCreator:
         dosage_instruction_text: str,
         substitution_allowed: bool,
     ) -> MedicationRequest:
-        
-        current_date_formatted = datetime.now().strftime("%d.%m.%Y")
-        identifier_value = current_date_formatted
-
         medication_request = MedicationRequest(
             id=str(uuid4()),
             meta=Meta(
@@ -54,6 +50,7 @@ class MedicationRequestCreator:
     
 
 if __name__ == "__main__":
+    import os
     medication_request = MedicationRequestCreator.create_medication_request(
         medication_reference="123",
         rxPrescriptionProcessIdentifier="160.768.272.480.500_20231220",
@@ -61,10 +58,7 @@ if __name__ == "__main__":
         dosage_instruction_text="1-0-1",
         substitution_allowed=True,
     )
-    #check if path exists 
     path = "../resources_created/fsh-generated/resources"
-    #if not create it
-    #save the medication_request to the file
     if not os.path.exists(path):
         os.makedirs(path)
     with open(path + "/medication_request.json", "w") as file:

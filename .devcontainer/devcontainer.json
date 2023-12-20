@@ -13,7 +13,8 @@
 				"ms-azuretools.vscode-docker",
 				"ms-python.python",
 				"GitHub.copilot",
-				"GitHub.copilot-chat"
+				"GitHub.copilot-chat",
+				"ms-python.black-formatter"
 			],
 			"settings": {
 				"codfsh.HapiValidator.Executable": "/home/vscode/.fhir/validators/validator_cli.jar",
