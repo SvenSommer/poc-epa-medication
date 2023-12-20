@@ -1,0 +1,31 @@
+{
+    "id": "45cb17c7-0040-4c23-872f-c35e306615b7",
+    "meta": {
+        "profile": [
+            "https://gematik.de/fhir/epa-medication/StructureDefinition/epa-medication"
+        ]
+    },
+    "code": {
+        "coding": [
+            {
+                "code": "08585997",
+                "display": "Prospan\u00ae Hustensaft 100ml",
+                "system": "http://fhir.de/CodeSystem/ifa/pzn"
+            }
+        ]
+    },
+    "form": {
+        "coding": [
+            {
+                "code": "FLE",
+                "system": "https://fhir.kbv.de/CodeSystem/KBV_CS_SFHIR_KBV_DARREICHUNGSFORM"
+            }
+        ]
+    },
+    "identifier": [
+        {
+            "value": "45cb17c7-0040-4c23-872f-c35e306615b7"
+        }
+    ],
+    "resourceType": "Medication"
+}

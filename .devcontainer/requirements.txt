@@ -1,0 +1,5 @@
+flask
+requests
+fhir-resources==6.1.0
+tzlocal>=5.0.0
+pydantic<1.8.0

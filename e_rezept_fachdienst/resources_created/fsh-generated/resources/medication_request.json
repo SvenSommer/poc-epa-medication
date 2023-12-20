@@ -1,0 +1,39 @@
+{
+    "id": "2ac380df-3037-4de7-ac2d-131086113c31",
+    "meta": {
+        "profile": [
+            "https://gematik.de/fhir/epa-medication/StructureDefinition/epa-medication-request"
+        ]
+    },
+    "authoredOn": "2023-12-20T20:09:04.441514+00:00",
+    "dispenseRequest": {
+        "quantity": {
+            "code": "{Package}",
+            "system": "http://unitsofmeasure.org",
+            "value": 1.0
+        }
+    },
+    "dosageInstruction": [
+        {
+            "text": "1-0-1"
+        }
+    ],
+    "identifier": [
+        {
+            "system": "https://gematik.de/fhir/epa-medication/sid/rx-prescription-process-identifier",
+            "value": "160.768.272.480.500_20231220"
+        }
+    ],
+    "intent": "order",
+    "medicationReference": {
+        "reference": "urn:uuid:123"
+    },
+    "status": "active",
+    "subject": {
+        "reference": "urn:uuid:789"
+    },
+    "substitution": {
+        "allowedBoolean": true
+    },
+    "resourceType": "MedicationRequest"
+}
