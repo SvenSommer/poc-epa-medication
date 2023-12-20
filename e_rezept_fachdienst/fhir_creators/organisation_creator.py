@@ -70,7 +70,7 @@ class OrganizationCreator:
         return organization
 
     @staticmethod
-    def get_example_organization():
+    def get_example_dentist():
         return OrganizationCreator.create_organization(
             org_id="OrganizationExample",
             telematik_id="2-2.58.00000040",
@@ -82,14 +82,26 @@ class OrganizationCreator:
             phone="030 1234567",
         )
     
+    def get_example_farmacy_organization():
+        return OrganizationCreator.create_organization(
+            org_id="OrganizationExample",
+            telematik_id="2-2.58.00000040",
+            org_type_code="1.2.276.1.78.6.87",
+            org_type_display="Apotheke",
+            name="Apotheke am Bahnhof",
+            alias="Apotheke am Bahnhof",
+            contact_name="Empfang Apotheke am Bahnhof",
+            phone="030 1234567",
+        )
+    
 if __name__ == "__main__":
     import os
-    organization = OrganizationCreator.get_example_organization()
+    organization = OrganizationCreator.get_example_dentist()
 
     path = "../resources_created/fsh-generated/resources"
     if not os.path.exists(path):
         os.makedirs(path)
-    with open(path + "/organization.json", "w") as file:
+    with open(path + "/organization_dentist.json", "w") as file:
         file.write(organization.json(indent=4))
 
     print(organization.json(indent=4))

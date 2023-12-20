@@ -15,7 +15,6 @@ class MedicationCreator:
         medication_text: str,
         form_code: str,
     ) -> Medication:
-        # Erstellen der Meta-Daten
         meta = Meta(
             profile=[
                 "https://gematik.de/fhir/epa-medication/StructureDefinition/epa-medication"
@@ -30,11 +29,8 @@ class MedicationCreator:
                 ),
             )
         ]
-
-        # Erstellen des Medication-Objekts
         medication = Medication(id=medication_id, meta=meta, extension=extension)
 
-        # Hinzufügen von Identifier, Code und Form
         medication.identifier = [{"value": medication_id}]
         medication.code = CodeableConcept(
             coding=[
@@ -54,23 +50,24 @@ class MedicationCreator:
             ]
         )
 
-        # Weitere spezifische Felder können hier basierend auf den Anforderungen hinzugefügt werden
-
         return medication
 
+    @staticmethod
+    def get_example_medication():
+        medication = MedicationCreator.create_medication(
+            medication_id="f694dc19-eeb6-42ad-af4a-2865f8a227d4",
+            rxPrescriptionProcessIdentifier="160.768.272.480.500_20231220",
+            pzn_code="pzn123",
+            medication_text="Beispiel Medikament",
+            form_code="tablette",
+        )
+        return medication
 
-# Verwendung der Klasse
 
 if __name__ == "__main__":
     import os
     creator = MedicationCreator()
-    medication = creator.create_medication(
-        medication_id="f694dc19-eeb6-42ad-af4a-2865f8a227d4",
-        rxPrescriptionProcessIdentifier="160.768.272.480.500_20231220",
-        pzn_code="pzn123",
-        medication_text="Beispiel Medikament",
-        form_code="tablette",
-    )
+    medication = creator.get_example_medication()
     path = "../resources_created/fsh-generated/resources"
     if not os.path.exists(path):
         os.makedirs(path)

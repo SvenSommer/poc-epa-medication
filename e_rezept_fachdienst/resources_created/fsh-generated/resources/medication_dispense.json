@@ -1,0 +1,46 @@
+{
+    "id": "bd9735e6-e1e7-41c4-8715-4ccec7913b02",
+    "meta": {
+        "profile": [
+            "https://gematik.de/fhir/epa-medication/StructureDefinition/epa-medication-dispense"
+        ]
+    },
+    "extension": [
+        {
+            "url": "https://gematik.de/fhir/epa-medication/StructureDefinition/rx-prescription-process-identifier-extension",
+            "valueIdentifier": {
+                "system": "https://gematik.de/fhir/epa-medication/sid/rx-prescription-process-identifier",
+                "value": "160.768.272.480.500_20231220"
+            }
+        }
+    ],
+    "authorizingPrescription": [
+        {
+            "reference": "urn:uuid:101112"
+        }
+    ],
+    "dosageInstruction": [
+        {
+            "text": "1-0-1"
+        }
+    ],
+    "medicationReference": {
+        "reference": "urn:uuid:123"
+    },
+    "performer": [
+        {
+            "actor": {
+                "reference": "urn:uuid:456"
+            }
+        }
+    ],
+    "status": "completed",
+    "subject": {
+        "reference": "urn:uuid:789"
+    },
+    "substitution": {
+        "wasSubstituted": true
+    },
+    "whenHandedOver": "2023-12-20T23:03:49.492985+01:00",
+    "resourceType": "MedicationDispense"
+}
