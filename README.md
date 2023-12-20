@@ -1,6 +1,6 @@
-# README for E-Rezept-Fachdienst and ePA MediationService Communication POC
+# POC for E-Rezept-Fachdienst and ePA MedicationService Communication
 
-This Proof of Concept (POC) demonstrates seamless communication between the E-Rezept-Fachdienst and the ePA MediationService, utilizing Docker and VS Code's .devcontainer feature for a streamlined setup process.
+This Proof of Concept (POC) demonstrates seamless communication between the E-Rezept-Fachdienst and the ePA MedicationService, utilizing Docker and VS Code's .devcontainer feature for a streamlined setup process.
 
 ## Overview
 
