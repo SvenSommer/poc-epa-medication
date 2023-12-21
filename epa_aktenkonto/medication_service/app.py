@@ -1,19 +1,15 @@
-from flask import Flask, request, jsonify
-import psycopg2
+from flask import Flask, render_template,request, jsonify
 import logging
-import os
+
+from database_controller import Database
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
+db = Database()
 
-DB_NAME = os.getenv('DB_NAME', 'fhir')
-DB_USER = os.getenv('DB_USER', 'fhir')
-DB_PASSWORD = os.getenv('DB_PASSWORD', 'fhir')
-DB_HOST = os.getenv('DB_HOST', 'localhost')
-DB_PORT = os.getenv('DB_PORT', '5432')
 
 def send_response(message, status_code=200):
     return jsonify({"message": message}), status_code
@@ -34,46 +30,53 @@ def validate_fhir_data(fhir_data, required_types):
 
 @app.route('/', methods=['GET'])
 def index():
-    try:
-        # Attempt to connect to the database
-        conn = psycopg2.connect(
-            dbname=DB_NAME,
-            user=DB_USER,
-            password=DB_PASSWORD,
-            host=DB_HOST,
-            port=DB_PORT
-        )
-        
-        # If connection is successful
-        conn.close()
-        return "Medication Service: running - Database Connected"
+    return render_template('index.html')
 
-    except Exception as e:
-        # If connection fails
-        return f"Medication Service: running - Database Connection Failed: {e}"
+@app.route('/get-fhir-data', methods=['GET'])
+def get_fhir_data():
+    if db.connect():
+        # Show all Organizations
+        organisations_resources = db.get_all_resources('organization')
+        medication_resources = db.get_all_resources('medication')
+        practitioners_resources = db.get_all_resources('practitioner')
+        medication_request_resources = db.get_all_resources('medicationrequest')
+        medication_dispense_resources = db.get_all_resources('medicationdispense')
+        db.close()
+        response = {"Organisations": organisations_resources, 
+                    "Medications": medication_resources, 
+                    "Practitioners": practitioners_resources, 
+                    "MedicationRequests": medication_request_resources, 
+                    "MedicationDispenses": medication_dispense_resources}
+        return jsonify(response)
+    else:
+        return jsonify({"status": f"Medication Service: running - Database Connection Failed"}), 500
+    
 
 @app.route('/$provide-prescription', methods=['POST'])
 def provide_prescription():
     fhir_data = request.json
 
-    if not validate_fhir_data(fhir_data, {'MedicationRequest', 'Medication', 'Organization', 'Practitioner'}):
+    # List of resource types to process
+    resource_types = ['MedicationRequest', 'Medication', 'Organization', 'Practitioner']
+
+    if not validate_fhir_data(fhir_data, set(resource_types)):
         return send_response("Invalid FHIR data", 400)
 
     try:
-        params = extract_parameters(fhir_data, ['MedicationRequest', 'Medication', 'Organization', 'Practitioner'])
+        params = extract_parameters(fhir_data, resource_types)
         if not params:
             raise ValueError("Required parameters not found")
 
-        # TODO: Process prescription logic here
-        logging.info(f"RxPrescriptionProcessIdentifier: {params['MedicationRequest'].get('identifier')[0].get('value')}")
-        logging.info(f"MedicationRequest Status: {params['MedicationRequest'].get('status')}")
-       
-        # Create or Update Organization
-        # check if organization already exists
-        # if not, create it
-        # if yes, update it
-        
-        logging.info(f"Organization: {params['Organization'].get('name')}")
+        # Process prescription logic here (if any)
+        logging.info(f"RxPrescriptionProcessIdentifier: {params.get('MedicationRequest', {}).get('identifier', [{}])[0].get('value')}")
+        logging.info(f"MedicationRequest Status: {params.get('MedicationRequest', {}).get('status')}")
+
+        # Create or Update resources in a loop
+        db.connect()
+        for resource_type in resource_types: 
+            if resource_type in params:
+                db.create_or_update_resource(resource_type, params[resource_type])
+                logging.info(f"{resource_type}: {params[resource_type].get('name')}")
 
         return send_response("OperationOutcome (success)")
     except DuplicatePrescriptionError:
@@ -103,21 +106,33 @@ def cancel_prescription():
 def provide_dispensation():
     fhir_data = request.json
 
-    if not validate_fhir_data(fhir_data, {'MedicationDispense', 'Medication', 'Organization'}):
+    # List of resource types to process
+    resource_types = ['MedicationDispense', 'Medication', 'Organization']
+
+    if not validate_fhir_data(fhir_data, set(resource_types)):
         return send_response("Invalid FHIR data", 400)
 
     try:
-        params = extract_parameters(fhir_data, ['MedicationDispense', 'Medication', 'Organization'])
+        params = extract_parameters(fhir_data, resource_types)
         if not params:
             raise ValueError("Required parameters not found")
 
-        # TODO: Process the dispensation logic here
-        logging.info(f"RxPrescriptionProcessIdentifier: {params['MedicationDispense'].get('extension')[0].get('valueIdentifier').get('value')}")
-        logging.info(f"MedicationDispense Status: {params['MedicationDispense'].get('status')}")
+        # Process the dispensation logic here (if any)
+        # Example logging, adjust according to your data structure
+        logging.info(f"RxPrescriptionProcessIdentifier: {params.get('MedicationDispense', {}).get('extension', [{}])[0].get('valueIdentifier', {}).get('value')}")
+        logging.info(f"MedicationDispense Status: {params.get('MedicationDispense', {}).get('status')}")
+
+        # Create or Update resources in a loop
+        db.connect()
+        for resource_type in resource_types:
+            if resource_type in params:
+                db.create_or_update_resource(resource_type, params[resource_type])
+                logging.info(f"{resource_type}: {params[resource_type].get('name')}")
 
         return send_response("Dispensation provided successfully")
     except Exception as e:
         return send_response(str(e), 500)
+
 
 @app.route('/$cancel-dispensation', methods=['POST'])
 def cancel_dispensation():

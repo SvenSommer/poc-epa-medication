@@ -1,0 +1,74 @@
+body {
+    padding: 0;
+    margin: 0;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+main {
+    padding: 1em;
+    margin: auto;
+    padding-left: 3em;
+}
+
+.darkside {
+
+    margin-top: 2em;
+    clear: both;
+    padding-left: 5em;
+    background-color: #282c34;
+    color: #ffffff;
+}
+
+.darkside h1 {
+    padding-top: 1em;
+    font-weight: bold;
+}
+
+.accordion {
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    outline: none;
+    transition: 0.4s;
+}
+
+.active,
+.accordion:hover {
+    background-color: #ccc;
+}
+
+.panel {
+    padding: 0 18px;
+    display: none;
+    background-color: white;
+    overflow: hidden;
+}
+
+.summary-div {
+    background-color: #f2f2f2;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.summary-div:hover {
+    background-color: #eaeaea;
+}
+
+.detail-container {
+    margin-top: 2em;
+    padding: 1em;
+    background-color: #282c34;
+    color: #ffffff;
+    max-height: 800px; /* Beispielhöhe, an Ihre Bedürfnisse anpassbar */
+    overflow-y: auto; /* Ermöglicht das Scrollen, wenn der Inhalt die max-height überschreitet */
+}
+
+.detail-container pre {
+    white-space: pre-wrap;
+}

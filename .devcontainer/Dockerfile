@@ -138,15 +138,19 @@ ENV DB_NAME=fhir_resources
 ENV DB_USER=medication_service
 ENV DB_PASSWORD=secret_password
 
-# Erstellen einer Datenbank um FHIR Ressourcen zu speichern
-# und eines Benutzers um auf die Datenbank zuzugreifen
-# Initialisieren und Konfigurieren der PostgreSQL-Datenbank
-RUN su - postgres -c "pg_ctl start -D /var/lib/postgresql/data -l /var/lib/postgresql/log/logfile" \
-    && su - postgres -c "psql -c \"CREATE DATABASE $DB_NAME;\"" \
-    && su - postgres -c "psql -c \"CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';\"" \
-    && su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;\"" \
-    && su - postgres -c "pg_ctl stop -D /var/lib/postgresql/data"
+# Switch to the postgres user to perform database operations
+USER postgres
 
+# Create a database, a user, grant privileges, and make necessary configurations
+RUN pg_ctl start -D /var/lib/postgresql/data -l /var/lib/postgresql/log/logfile \
+    && psql -c "CREATE DATABASE $DB_NAME;" \
+    && psql -c "CREATE USER $DB_USER WITH PASSWORD '$DB_PASSWORD';" \
+    && psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;" \
+    && psql -c "ALTER USER $DB_USER WITH SUPERUSER;" \
+    && pg_ctl stop -D /var/lib/postgresql/data
+
+# Switch back to the root user (optional, depending on further needs)
+USER root
 
 
 # Expose PostgreSQL port
@@ -165,4 +169,4 @@ ENV FHIR_OPERATION_URL http://127.0.0.1:5000
 COPY . /workspace
 
 # Startbefehl
-CMD ["/workspaces/poc-epa-medication/start.sh"]
+CMD [ "/bin/bash" ]
