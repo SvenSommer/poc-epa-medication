@@ -1,10 +1,19 @@
 from flask import Flask, request, jsonify
+import psycopg2
 import logging
+import os
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
+
+
+DB_NAME = os.getenv('DB_NAME', 'fhir')
+DB_USER = os.getenv('DB_USER', 'fhir')
+DB_PASSWORD = os.getenv('DB_PASSWORD', 'fhir')
+DB_HOST = os.getenv('DB_HOST', 'localhost')
+DB_PORT = os.getenv('DB_PORT', '5432')
 
 def send_response(message, status_code=200):
     return jsonify({"message": message}), status_code
@@ -25,7 +34,23 @@ def validate_fhir_data(fhir_data, required_types):
 
 @app.route('/', methods=['GET'])
 def index():
-    return "Medication Service: running"
+    try:
+        # Attempt to connect to the database
+        conn = psycopg2.connect(
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+            port=DB_PORT
+        )
+        
+        # If connection is successful
+        conn.close()
+        return "Medication Service: running - Database Connected"
+
+    except Exception as e:
+        # If connection fails
+        return f"Medication Service: running - Database Connection Failed: {e}"
 
 @app.route('/$provide-prescription', methods=['POST'])
 def provide_prescription():
@@ -43,6 +68,13 @@ def provide_prescription():
         logging.info(f"RxPrescriptionProcessIdentifier: {params['MedicationRequest'].get('identifier')[0].get('value')}")
         logging.info(f"MedicationRequest Status: {params['MedicationRequest'].get('status')}")
        
+        # Create or Update Organization
+        # check if organization already exists
+        # if not, create it
+        # if yes, update it
+        
+        logging.info(f"Organization: {params['Organization'].get('name')}")
+
         return send_response("OperationOutcome (success)")
     except DuplicatePrescriptionError:
         return send_response("Duplicate prescription", 409)
