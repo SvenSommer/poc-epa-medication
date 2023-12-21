@@ -1,3 +1,4 @@
+from flask import Flask, request, render_template, jsonify
 import json
 import os
 import logging
@@ -16,6 +17,7 @@ from fhir_creators.medication_dispense_creator import MedicationDispenseCreator
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
 
+app = Flask(__name__)
 # FHIR Server Constants
 FHIR_OPERATION_URL = os.getenv("FHIR_OPERATION_URL", "http://127.0.0.1:5000")
 
@@ -120,18 +122,60 @@ def cancel_dispensation(rxPrescriptionProcessIdentifier):
 def fhir_model_to_json(model: FHIRAbstractModel) -> dict:
     return json.loads(model.json())
 
+@app.route("/", methods=["GET"])
+def index():
+    return render_template("index.html")
 
+@app.route("/control", methods=["GET"])
+def control():
+    return render_template("control.html")
+
+@app.route('/send_prescription', methods=['POST'])
+def api_send_prescription():
+    try:
+        rx_prescription_process_identifier = request.json.get('rxPrescriptionProcessIdentifier', '')
+        if not rx_prescription_process_identifier:
+            return jsonify({"error": "Missing rxPrescriptionProcessIdentifier"}), 400
+        prescription_resources = create_medication_request(rx_prescription_process_identifier)
+        send_prescription(prescription_resources)
+        return jsonify({"message": "Prescription sent"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/cancel_prescription', methods=['POST'])
+def api_cancel_prescription():
+    rx_prescription_process_identifier = request.json.get('rxPrescriptionProcessIdentifier', '')
+    if not rx_prescription_process_identifier:
+        return jsonify({"error": "Missing rxPrescriptionProcessIdentifier"}), 400
+
+    try:
+        cancel_prescription(rx_prescription_process_identifier)
+        return jsonify({"message": "Prescription cancelled"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/send_dispensation', methods=['POST'])
+def api_send_dispensation():
+    try:
+        rx_prescription_process_identifier = request.json.get('rxPrescriptionProcessIdentifier', '')
+        if not rx_prescription_process_identifier:
+            return jsonify({"error": "Missing rxPrescriptionProcessIdentifier"}), 400
+        dispense_resources = create_medication_dispense(rx_prescription_process_identifier, "2023-12-20T18:23:00+01:00")
+        send_dispensation(dispense_resources)
+        return jsonify({"message": "Dispensation sent"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/cancel_dispensation', methods=['POST'])
+def api_cancel_dispensation():
+    rx_prescription_process_identifier = request.json.get('rxPrescriptionProcessIdentifier', '')
+    if not rx_prescription_process_identifier:
+        return jsonify({"error": "Missing rxPrescriptionProcessIdentifier"}), 400
+    try:
+        cancel_dispensation(rx_prescription_process_identifier)
+        return jsonify({"message": "Dispensation cancelled"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    try:
-        rxPrescriptionProcessIdentifier = "160.768.272.480.500_20231220"
-    
-        prescription_resources = create_medication_request(rxPrescriptionProcessIdentifier)
-        send_prescription(prescription_resources)
-        cancel_prescription(rxPrescriptionProcessIdentifier)
-
-        dispense_resources = create_medication_dispense(rxPrescriptionProcessIdentifier, "2023-12-20T18:23:00+01:00")
-        send_dispensation(dispense_resources)
-        cancel_dispensation(rxPrescriptionProcessIdentifier)
-    except Exception as e:
-        logging.error(f"Main execution error: {e}")
+    app.run(debug=True, port=5001)

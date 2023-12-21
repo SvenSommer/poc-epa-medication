@@ -1,97 +1,140 @@
-const createSummaryElement = (text, className) => {
+function createSummaryElement(text, className) {
     const element = document.createElement('div');
     element.classList.add(className);
     element.textContent = text;
     return element;
-};
-window.addEventListener('DOMContentLoaded', () => {
-    fetch('/get-fhir-data')
-        .then(response => response.json())
-        .then(data => {
-            const container = document.getElementById('accordion-container');
+}
 
-            Object.keys(data).forEach(key => {
-                const accordion = document.createElement('button');
-                accordion.className = 'accordion';
-                accordion.textContent = `${key} (${data[key].length} Elemente)`;
-                container.appendChild(accordion);
+function createAccordionItem(key, data, container) {
+    const accordion = document.createElement('button');
+    accordion.className = 'accordion';
+    accordion.textContent = `${key} (${data.length} Elemente)`;
+    container.appendChild(accordion);
+    return accordion;
+}
 
-                const panel = document.createElement('div');
-                panel.className = 'panel';
-                container.appendChild(panel);
+function createPanel(container) {
+    const panel = document.createElement('div');
+    panel.className = 'panel';
+    container.appendChild(panel);
+    return panel;
+}
 
-                data[key].forEach(item => {
-                    const resourceData = item[0];
-                    let summary;
+function createSummaryForResource(key, resourceData) {
+    let summary = document.createElement('div');
+    summary = handleSummaryCreation(key, resourceData, summary);
+    summary.className = 'summary-div';
+    return summary;
+}
 
-                    if (key === 'MedicationDispenses') {
-                        const rxIdentifier = resourceData.extension.find(ext => ext.url.includes('rx-prescription-process-identifier-extension'))?.valueIdentifier?.value;
-                        const whenHandedOver = resourceData.whenHandedOver;
-                        const status = resourceData.status;
-                        const wasSubstituted = resourceData.substitution?.wasSubstituted;
+function handleSummaryCreation(key, resourceData, summary) {
+    switch (key) {
+        case 'MedicationDispenses':
+            return buildMedicationDispensesSummary(resourceData, summary);
+        case 'MedicationRequests':
+            return buildMedicationRequestsSummary(resourceData, summary);
+        case 'Organisations':
+            return buildOrganisationsSummary(resourceData, summary);
+        case 'Medications':
+            return buildMedicationsSummary(resourceData, summary);
+        case 'Practitioners':
+            return buildPractitionersSummary(resourceData, summary);
+        default:
+            summary.textContent = JSON.stringify(resourceData, null, 2);
+            return summary;
+    }
+}
 
-                        summary = document.createElement('div');
-                        summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}`, 'summary-property'));
-                        summary.appendChild(createSummaryElement(`Handed Over: ${whenHandedOver}`, 'summary-property'));
-                        summary.appendChild(createSummaryElement(`Status: ${status}`, 'summary-property'));
-                        summary.appendChild(createSummaryElement(`Substituted: ${wasSubstituted}`, 'summary-property'));
+function buildMedicationDispensesSummary(resourceData, summary) {
+    const rxIdentifier = resourceData.extension.find(ext => ext.url.includes('rx-prescription-process-identifier-extension'))?.valueIdentifier?.value;
+    const whenHandedOver = resourceData.whenHandedOver;
+    const status = resourceData.status;
+    const wasSubstituted = resourceData.substitution?.wasSubstituted;
 
-                    } else if (key === 'MedicationRequests') {
-                        const rxIdentifier = resourceData.identifier.find(ident => ident.system.includes('rx-prescription-process-identifier'))?.value;
-                        const authoredOn = resourceData.authoredOn;
-                        const status = resourceData.status;
-                        const substitutionAllowed = resourceData.substitution?.allowedBoolean;
+    summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Handed Over: ${whenHandedOver}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Status: ${status}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Substituted: ${wasSubstituted}`, 'summary-property'));
 
-                        summary = document.createElement('div');
-                        summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}`, 'summary-property'));
-                        summary.appendChild(createSummaryElement(`Authored On: ${authoredOn}`, 'summary-property'));
-                        summary.appendChild(createSummaryElement(`Status: ${status}`, 'summary-property'));
-                        summary.appendChild(createSummaryElement(`Substitution Allowed: ${substitutionAllowed}`, 'summary-property'));
+    return summary;
+}
 
-                    } else if (key === 'Medications') {
-                        const code = resourceData.code?.coding?.[0]?.code;
-                        const display = resourceData.code?.coding?.[0]?.display;
+function buildMedicationRequestsSummary(resourceData, summary) {
+    const rxIdentifier = resourceData.identifier.find(ident => ident.system.includes('rx-prescription-process-identifier'))?.value;
+    const authoredOn = resourceData.authoredOn;
+    const status = resourceData.status;
+    const substitutionAllowed = resourceData.substitution?.allowedBoolean;
 
-                        summary = document.createElement('div');
-                        summary.appendChild(createSummaryElement(`Code: ${code}`, 'summary-property'));
-                        summary.appendChild(createSummaryElement(`Display: ${display}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Authored On: ${authoredOn}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Status: ${status}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Substitution Allowed: ${substitutionAllowed}`, 'summary-property'));
 
-                    } else if (key === 'Organisations') {
-                        const name = resourceData.name;
+    return summary;
+}
 
-                        summary = document.createElement('div');
-                        summary.appendChild(createSummaryElement(`Name: ${name}`, 'summary-property'));
+function buildOrganisationsSummary(resourceData, summary) {
+    const name = resourceData.name;
 
-                    } else if (key === 'Practitioners') {
-                        const name = resourceData.name?.[0]?.text;
+    summary.appendChild(createSummaryElement(`Name: ${name}`, 'summary-property'));
 
-                        summary = document.createElement('div');
-                        summary.appendChild(createSummaryElement(`Name: ${name}`, 'summary-property'));
+    return summary;
+}
 
-                    } else {
-                        summary = document.createElement('pre');
-                        summary.textContent = JSON.stringify(resourceData, null, 2);
-                    }
-                    summary.className = 'summary-div';
+function buildMedicationsSummary(resourceData, summary) {
+    const code = resourceData.code?.coding?.[0]?.code;
+    const display = resourceData.code?.coding?.[0]?.display;
 
-                    panel.appendChild(summary);
+    summary.appendChild(createSummaryElement(`Code: ${code}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Display: ${display}`, 'summary-property'));
 
-                    summary.addEventListener('click', () => {
-                        const codeElement = document.getElementById('json-code');
-                        codeElement.textContent = JSON.stringify(resourceData, null, 2);
-                        codeElement.removeAttribute('data-highlighted');
-                        hljs.highlightElement(codeElement);
+    return summary;
+}
+
+function buildPractitionersSummary(resourceData, summary) {
+    const name = resourceData.name?.[0]?.text;
+
+    summary.appendChild(createSummaryElement(`Name: ${name}`, 'summary-property'));
+
+    return summary;
+}
+
+
+
+function initializeAccordion() {
+    window.addEventListener('DOMContentLoaded', () => {
+        fetch('/get-fhir-data')
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('accordion-container');
+                Object.keys(data).forEach(key => {
+                    const accordion = createAccordionItem(key, data[key], container);
+                    const panel = createPanel(container);
+
+                    data[key].forEach(item => {
+                        const resourceData = item[0];
+                        const summary = createSummaryForResource(key, resourceData);
+                        panel.appendChild(summary);
+
+                        // Add event listeners
+                        summary.addEventListener('click', () => {
+                            const codeElement = document.getElementById('json-code');
+                            codeElement.textContent = JSON.stringify(resourceData, null, 2);
+                            codeElement.removeAttribute('data-highlighted');
+                            hljs.highlightElement(codeElement);
+                        });
                     });
 
+                    accordion.addEventListener('click', function () {
+                        this.classList.toggle('active');
+                        const panel = this.nextElementSibling;
+                        panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+                    });
                 });
-
-                accordion.addEventListener('click', function () {
-                    this.classList.toggle('active');
-                    const panel = this.nextElementSibling;
-                    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-                });
+            }).catch(err => {
+                console.error(err);
             });
-        }).catch(err => {
-            console.error(err);
-        });
-};
+    });
+}
+
+initializeAccordion();

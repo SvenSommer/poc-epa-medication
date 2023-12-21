@@ -33,10 +33,13 @@ def validate_fhir_data(fhir_data, required_types):
     received_types = {param.get("name") for param in fhir_data.get("parameter", [])}
     return required_types.issubset(received_types)
 
-
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
+
+@app.route("/ressources", methods=["GET"])
+def resources():
+    return render_template("ressources.html")
 
 
 @app.route("/get-fhir-data/<resource_type>", methods=["GET"])
@@ -126,10 +129,10 @@ def provide_prescription():
         params = extract_parameters(fhir_data, resource_types)
         if not params:
             raise ValueError("Required parameters not found")
-
         rx_identifier = (
             params.get("MedicationRequest", {}).get("identifier", [{}])[0].get("value")
         )
+        print(rx_identifier)
         logging.info(f"RxPrescriptionProcessIdentifier: {rx_identifier}")
 
         db.connect()
@@ -144,6 +147,9 @@ def provide_prescription():
                     db.create_resource(resource_type, params[resource_type])
 
                 logging.info(f"{resource_type}: {params[resource_type].get('name')}")
+        db.close()
+        return send_response("Dispensation cancelled successfully")
+    
     except DuplicatePrescriptionError:
         return send_response("Duplicate prescription", 409)
     except Exception as e:

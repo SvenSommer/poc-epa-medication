@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../static/style.css">
+    <title>E-Rezept-Fachdienst Interface</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <main>
+        <h1>E-Rezept-Fachdienst</h1>
+        <nav>
+            <ul>
+                <li ><a href="index">Fachdienst</a></li>
+                <li class= "active"><a href="control">Fachdienst Controller</a></li>
+            </ul>
+        </nav>
+
+    </main>
+    <main class="container mt-5">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Rx Prescription Process Identifier" id="rxPrescriptionProcessIdentifier">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="button" id="setIdentifier">Set Identifier</button>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col">
+                <h2>Arztpraxis</h2>
+                <button id="sendPrescription" class="btn btn-primary">Rezept Senden</button>
+                <button id="cancelPrescription" class="btn btn-danger">Rezept Stornieren</button>
+            </div>
+            <div class="col">
+                <h2>Apotheke</h2>
+                <button id="sendDispensation" class="btn btn-primary">Abgabe Senden</button>
+                <button id="cancelDispensation" class="btn btn-danger">Abgabe Stornieren</button>
+            </div>
+        </div>
+
+        <div id="responseMessage" class="mt-3"></div>
+    </main>
+
+    <script>
+        let rxPrescriptionProcessIdentifier;
+        
+        // Set identifier button click event
+        $('#setIdentifier').click(function() {
+            rxPrescriptionProcessIdentifier = $('#rxPrescriptionProcessIdentifier').val().trim();
+            if(rxPrescriptionProcessIdentifier) {
+                $('#responseMessage').html(`<div class="alert alert-success">Identifier set to: ${rxPrescriptionProcessIdentifier}</div>`);
+            } else {
+                $('#responseMessage').html(`<div class="alert alert-danger">Please enter a valid identifier.</div>`);
+            }
+        });
+
+        // Function to make AJAX POST request
+        function makeRequest(url, requestType) {
+            if(rxPrescriptionProcessIdentifier) {
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ rxPrescriptionProcessIdentifier }),
+                    success: function(response) {
+                        $('#responseMessage').html(`<div class="alert alert-success">${response.message}</div>`);
+                    },
+                    error: function(xhr) {
+                        $('#responseMessage').html(`<div class="alert alert-danger">${xhr.responseJSON.error}</div>`);
+                    }
+                });
+            } else {
+                $('#responseMessage').html(`<div class="alert alert-danger">Identifier not set.</div>`);
+            }
+        }
+
+        // Send prescription button click event
+        $('#sendPrescription').click(function() {
+            makeRequest('/send_prescription', 'Prescription sent');
+        });
+
+        // Cancel prescription button click event
+        $('#cancelPrescription').click(function() {
+            makeRequest('/cancel_prescription', 'Prescription cancelled');
+        });
+
+        // Send dispensation button click event
+        $('#sendDispensation').click(function() {
+            makeRequest('/send_dispensation', 'Dispensation sent');
+        });
+
+        // Cancel dispensation button click event
+        $('#cancelDispensation').click(function() {
+            makeRequest('/cancel_dispensation', 'Dispensation cancelled');
+        });
+    </script>
+</body>
+</html>

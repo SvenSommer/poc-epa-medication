@@ -3,26 +3,34 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Medication Service</title>
+    <title>FHIR Datenansicht</title>
     <link rel="stylesheet" href="../static/style.css">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
 </head>
 
 <body>
+    <!-- Container für die Accordion-Elemente -->
     <main>
         <h1>Medication Service</h1>
         <nav>
             <ul>
                 <li><a href="control">Fachdienst Controller</a></li>
-                <li><a href="ressources">Ressourcen List</a></li>
+                <li class="active"><a href="ressources">Ressourcen List</a></li>
                 <li><a href="medlist">Medicationsliste</a></li>
                 <li><a href="medplan">Medicationsplan</a></li>
             </ul>
         </nav>
-
+        <div id="accordion-container"></div>
     </main>
+    <div class="darkside detail-container" id="detail-container">
+        <h1>FHIR Ressource</h1>
+        <!-- Das formatierte JSON wird hier angezeigt -->
+        <pre><code class="json" id="json-code"></code></pre>
+    </div>
+    <script src="../static/index.js"></script>
 </body>
 
 </html>
