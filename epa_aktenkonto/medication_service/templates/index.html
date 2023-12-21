@@ -24,6 +24,12 @@
     </div>
 
     <script>
+        function createSummaryElement(text, className) {
+            const element = document.createElement('div');
+            element.classList.add(className);
+            element.textContent = text;
+            return element;
+        }
         window.onload = function () {
             fetch('/get-fhir-data')
                 .then(response => response.json())
@@ -51,28 +57,45 @@
                                 const whenHandedOver = resourceData.whenHandedOver;
                                 const status = resourceData.status;
                                 const wasSubstituted = resourceData.substitution?.wasSubstituted;
+
                                 summary = document.createElement('div');
-                                summary.innerHTML = `Rx Identifier: ${rxIdentifier}, Handed Over: ${whenHandedOver}, Status: ${status}, Substituted: ${wasSubstituted}`;
+                                summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}`, 'summary-property'));
+                                summary.appendChild(createSummaryElement(`Handed Over: ${whenHandedOver}`, 'summary-property'));
+                                summary.appendChild(createSummaryElement(`Status: ${status}`, 'summary-property'));
+                                summary.appendChild(createSummaryElement(`Substituted: ${wasSubstituted}`, 'summary-property'));
+
                             } else if (key === 'MedicationRequests') {
                                 const rxIdentifier = resourceData.identifier.find(ident => ident.system.includes('rx-prescription-process-identifier'))?.value;
                                 const authoredOn = resourceData.authoredOn;
                                 const status = resourceData.status;
                                 const substitutionAllowed = resourceData.substitution?.allowedBoolean;
+
                                 summary = document.createElement('div');
-                                summary.innerHTML = `Rx Identifier: ${rxIdentifier}, Authored On: ${authoredOn}, Status: ${status}, Substitution Allowed: ${substitutionAllowed}`;
+                                summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}`, 'summary-property'));
+                                summary.appendChild(createSummaryElement(`Authored On: ${authoredOn}`, 'summary-property'));
+                                summary.appendChild(createSummaryElement(`Status: ${status}`, 'summary-property'));
+                                summary.appendChild(createSummaryElement(`Substitution Allowed: ${substitutionAllowed}`, 'summary-property'));
+
                             } else if (key === 'Medications') {
                                 const code = resourceData.code?.coding?.[0]?.code;
                                 const display = resourceData.code?.coding?.[0]?.display;
+
                                 summary = document.createElement('div');
-                                summary.innerHTML = `Code: ${code}, Display: ${display}`;
+                                summary.appendChild(createSummaryElement(`Code: ${code}`, 'summary-property'));
+                                summary.appendChild(createSummaryElement(`Display: ${display}`, 'summary-property'));
+
                             } else if (key === 'Organisations') {
                                 const name = resourceData.name;
+
                                 summary = document.createElement('div');
-                                summary.innerHTML = `Name: ${name}`;
+                                summary.appendChild(createSummaryElement(`Name: ${name}`, 'summary-property'));
+
                             } else if (key === 'Practitioners') {
                                 const name = resourceData.name?.[0]?.text;
+
                                 summary = document.createElement('div');
-                                summary.innerHTML = `Name: ${name}`;
+                                summary.appendChild(createSummaryElement(`Name: ${name}`, 'summary-property'));
+
                             } else {
                                 summary = document.createElement('pre');
                                 summary.textContent = JSON.stringify(resourceData, null, 2);
