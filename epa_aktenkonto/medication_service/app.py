@@ -32,10 +32,29 @@ def validate_fhir_data(fhir_data, required_types):
 def index():
     return render_template('index.html')
 
+@app.route('/get-fhir-data/<resource_type>', methods=['GET'])
+def get_fhir_data_by_type(resource_type):
+    if db.connect():
+        resources = db.get_all_resources(resource_type)
+        db.close()
+        return jsonify(resources)
+    else:
+        return jsonify({"status": f"Medication Service: running - Database Connection Failed"}), 500
+    
+
+    
+@app.route('/get-fhir-data/<resource_type>/<resource_id>', methods=['GET'])
+def get_fhir_data_by_id(resource_type, resource_id):
+    if db.connect():
+        resource = db.get_resource(resource_type, resource_id)
+        db.close()
+        return jsonify(resource)
+    else:
+        return jsonify({"status": f"Medication Service: running - Database Connection Failed"}), 500
+
 @app.route('/get-fhir-data', methods=['GET'])
 def get_fhir_data():
     if db.connect():
-        # Show all Organizations
         organisations_resources = db.get_all_resources('organization')
         medication_resources = db.get_all_resources('medication')
         practitioners_resources = db.get_all_resources('practitioner')
