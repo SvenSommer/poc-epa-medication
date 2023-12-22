@@ -112,3 +112,62 @@ nav ul li a:hover {
 .detail-container pre {
     white-space: pre-wrap;
 }
+/* Table styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+th {
+    background-color: #333; /* Dunkler Hintergrund */
+    color: white;
+    text-align: left;
+    padding: 8px;
+}
+
+td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+tr:hover {
+    background-color: #ddd;
+}
+
+.error-row {
+    background-color: #ffb3b3; /* Softer red */
+}
+
+.custom-button {
+    color: white !important; /* Weiße Textfarbe */
+    background-color: #444 !important;
+    border: 1px solid #555 !important;; /* Dezenter Rahmen */
+    padding: 14px 16px; /* Padding */
+    margin: 5px 0; /* Abstand */
+    width: 100%; /* Volle Breite */
+    transition: all 0.3s ease; /* Weiche Übergangseffekte */
+    text-align: center; /* Zentrieren des Textes */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Leichter Schatten für Tiefe */
+}
+
+.custom-button:hover {
+    background-color: #333 !important;; /* Dunklere Hintergrundfarbe beim Hover */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* Stärkerer Schatten beim Hover */
+}
+
+.custom-button-primary {
+    background-color: #4CAF50; /* Primäre Farbe */
+}
+
+.custom-button-danger {
+    background-color: #f44336; /* Gefahrenfarbe */
+}
+
+.custom-button-primary:hover {
+    background-color: #3e8e41; /* Dunklere Farbe beim Hover für primären Button */
+}
+
+.custom-button-danger:hover {
+    background-color: #d32f2f; /* Dunklere Farbe beim Hover für Gefahren-Button */
+}

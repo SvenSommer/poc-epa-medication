@@ -32,7 +32,6 @@ function handleSummaryCreation(key, resourceData, summary) {
         case 'MedicationDispenses':
             return buildMedicationDispensesSummary(resourceData.MedicationDispense, summary);
         case 'MedicationRequests':
-
             return buildMedicationRequestsSummary(resourceData.MedicationRequest, summary);
         case 'Organisations':
             return buildOrganisationsSummary(resourceData.Organization, summary);
@@ -62,12 +61,17 @@ function buildMedicationDispensesSummary(resourceData, summary) {
 
 function buildMedicationRequestsSummary(resourceData, summary) {
     const rxIdentifier = resourceData.identifier.find(ident => ident.system.includes('rx-prescription-process-identifier'))?.value;
+    const dosageInstruction = resourceData.dosageInstruction?.[0]?.text;
+    const quantity_value = resourceData.dispenseRequest?.quantity?.value;
+    const quantity_code = resourceData.dispenseRequest?.quantity?.code;
     const authoredOn = resourceData.authoredOn;
     const status = resourceData.status;
     const substitutionAllowed = resourceData.substitution?.allowedBoolean;
 
     summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Authored On: ${authoredOn}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Quantity: ${quantity_value} ${quantity_code}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Dosage Instruction: ${dosageInstruction}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Status: ${status}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Substitution Allowed: ${substitutionAllowed}`, 'summary-property'));
 
@@ -75,27 +79,45 @@ function buildMedicationRequestsSummary(resourceData, summary) {
 }
 
 function buildOrganisationsSummary(resourceData, summary) {
+    const telematikId = resourceData.identifier.find(ident => ident.system.includes('telematik-id'))?.value;
     const name = resourceData.name;
+    const type = resourceData.type?.[0]?.coding?.[0]?.display;
 
+    summary.appendChild(createSummaryElement(`Telematik ID: ${telematikId}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Type: ${type}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Name: ${name}`, 'summary-property'));
 
     return summary;
 }
 
 function buildMedicationsSummary(resourceData, summary) {
+    const rxIdentifier = resourceData.extension.find(ext => ext.url.includes('rx-prescription-process-identifier-extension'))?.valueIdentifier?.value;
     const code = resourceData.code?.coding?.[0]?.code;
     const display = resourceData.code?.coding?.[0]?.display;
-
+    const status = resourceData.status;
+    summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}`, 'summary-property'));
+    console.log(resourceData.identifier)
+    if (resourceData.identifier) {
+        const unique_identifier = resourceData.identifier.find(ident => ident?.system?.includes('epa-medication-unique-identifier'))?.value;
+        summary.appendChild(createSummaryElement(`Unique Identifier: ${unique_identifier}`, 'summary-property'));
+    }
     summary.appendChild(createSummaryElement(`Code: ${code}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Display: ${display}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Status: ${status}`, 'summary-property'));
 
     return summary;
 }
 
 function buildPractitionersSummary(resourceData, summary) {
+    const telematikId = resourceData.identifier.find(ident => ident.system.includes('telematik-id'))?.value;
     const name = resourceData.name?.[0]?.text;
-
+    const qualification = resourceData.qualification
+    summary.appendChild(createSummaryElement(`Telematik ID: ${telematikId}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Name: ${name}`, 'summary-property'));
+    for (const qual of qualification) {
+        if (qual.code.coding[0]?.display != undefined)
+            summary.appendChild(createSummaryElement(`Qualification: ${qual.code.coding[0]?.display}`, 'summary-property'));
+    }
 
     return summary;
 }

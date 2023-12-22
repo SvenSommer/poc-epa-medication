@@ -99,8 +99,8 @@ class DatabaseWriter(DatabaseConnection):
 
     def _commit_create_or_update_resource(self, resource_type, unique_ressource_identifier, resource_data_json, rx_identifier):
         with self.conn.cursor() as cursor:
-            resource_identifier = self.find_resource_by_unique_ressource_identifier(cursor, resource_type, unique_ressource_identifier)
             
+            resource_identifier = self.find_resource_by_identifiers(cursor, resource_type, unique_ressource_identifier, rx_identifier)
             if resource_identifier:
                 self._update_resource(cursor, resource_type, resource_data_json, resource_identifier)
             else:
@@ -109,8 +109,11 @@ class DatabaseWriter(DatabaseConnection):
 
             return resource_identifier
 
-    def find_resource_by_unique_ressource_identifier(self, cursor, resource_type, unique_ressource_identifier):
-        cursor.execute(f"SELECT identifier FROM {resource_type} WHERE unique_ressource_identifier = %s", (unique_ressource_identifier,))
+    def find_resource_by_identifiers(self, cursor, resource_type, unique_ressource_identifier, rx_identifier):
+        if rx_identifier:
+            cursor.execute(f"SELECT identifier FROM {resource_type} WHERE unique_ressource_identifier = %s AND rx_identifier = %s", (unique_ressource_identifier,rx_identifier))
+        else:   
+            cursor.execute(f"SELECT identifier FROM {resource_type} WHERE unique_ressource_identifier = %s", (unique_ressource_identifier,))
         resource = cursor.fetchone()
         return resource[0] if resource else None
 

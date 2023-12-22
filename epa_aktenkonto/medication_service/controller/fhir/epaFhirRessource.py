@@ -8,5 +8,8 @@ class ePAFHIRRessource:
     def get_unique_identifier(self, ressource):
         pass
 
+    def store(self, ressource):
+        pass
+
     def _generate_hash(self, input_str):
         return hashlib.sha256(input_str.encode()).hexdigest()

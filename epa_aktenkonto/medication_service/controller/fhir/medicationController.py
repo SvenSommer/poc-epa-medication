@@ -1,9 +1,14 @@
-import hashlib
 import json
 import logging
 from controller.fhir.epaFhirRessource import ePAFHIRRessource
+from controller.fhir.fhirHelper import FHIRHelper
 
 class MedicationController(ePAFHIRRessource):
+    def __init__(self, db_reader, db_writer):
+        self.db_reader = db_reader
+        self.db_writer = db_writer
+        self.fhir_helper = FHIRHelper()
+
     def getRxIdentifier(self, medication):
         rx_identifier = self.fhir_helper.extract_first_extension_value(
             medication, 
@@ -59,3 +64,52 @@ class MedicationController(ePAFHIRRessource):
             f"{ingredient['item'].get('coding', [{}])[0].get('code')}{ingredient.get('strength')}"
             for ingredient in ingredients if 'item' in ingredient and 'coding' in ingredient['item']
         ]
+    
+    def update_status(self, rx_identifier, new_status):
+        medications = self.db_reader.get_resource_by_rx_identifier("Medication", rx_identifier)
+        if not medications:
+            raise ValueError(f"Medication with RxPrescriptionProcessIdentifier: '{rx_identifier}' not found")   
+        for medication in medications:
+            medication = self.set_new_status(medication, new_status)
+            unique_ressource_identifier = self.get_unique_identifier(medication)
+            self.db_writer.create_or_update_resource("Medication", medication, unique_ressource_identifier, rx_identifier)
+
+    def set_new_status(self, medication, new_status):
+        if isinstance(medication, tuple) and isinstance(medication[0], dict):
+            medication_data = medication[0]
+        else:
+            raise ValueError("Invalid format for Medication data")
+
+        if 'Medication' in medication_data:
+            medication_data['Medication']["status"] = new_status
+        else:
+            raise ValueError("Medication data not found in the expected format")
+
+        # Optionally update meta.versionId and meta.lastUpdated here
+        # ...
+
+        return medication_data
+
+    
+    def store(self, medication):
+        rx_identifier = self.getRxIdentifier(medication)
+        logging.info("Storing Medication with rx_identifier: %s", rx_identifier)
+        unique_ressource_identifier = self.get_unique_identifier(medication)
+
+        self.add_unique_identifer(medication, unique_ressource_identifier)
+
+        self.db_writer.create_or_update_resource("Medication", medication, unique_ressource_identifier, rx_identifier)
+        return rx_identifier
+
+    def add_unique_identifer(self, medication, unique_ressource_identifier):
+        if 'Medication' in medication:
+            medication_data = medication['Medication']
+            identifier = medication_data.get('identifier', [])
+            identifier.append({
+                "system": "https://gematik.de/fhir/epa-medication/sid/epa-medication-unique-identifier",
+                "value": unique_ressource_identifier
+            })
+            medication_data['identifier'] = identifier
+        else:
+            raise ValueError("Medication data not found in the expected format")
+
