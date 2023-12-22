@@ -1,14 +1,20 @@
 from flask import Flask, render_template, request, jsonify
 import logging
 
-from database_controller import Database
+from controller.database.database_reader import DatabaseReader
+from controller.database.database_writer import DatabaseWriter
+from fhirValidator.fhirValidator import FHIRValidator
+from controller.fhir.prescriptionController import DuplicateMedicationRequestError, PrescriptionController
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
-db = Database()
+db_reader = DatabaseReader()
+db_writer = DatabaseWriter()
+fhir_validator = FHIRValidator()
+prescription_controller = PrescriptionController(db_reader,db_writer)
 
 
 def send_response(message, status_code=200):
@@ -39,14 +45,14 @@ def index():
 
 @app.route("/ressources", methods=["GET"])
 def resources():
-    return render_template("ressources.html")
+    return render_template("resources.html")
 
 
 @app.route("/get-fhir-data/<resource_type>", methods=["GET"])
 def get_fhir_data_by_type(resource_type):
-    if db.connect():
-        resources = db.get_all_resources(resource_type)
-        db.close()
+    if db_reader.connect():
+        resources = db_reader.get_all_resources(resource_type)
+        db_reader.close()
         return jsonify(resources)
     else:
         return (
@@ -59,9 +65,9 @@ def get_fhir_data_by_type(resource_type):
 
 @app.route("/get-fhir-data/<resource_type>/<resource_id>", methods=["GET"])
 def get_fhir_data_by_id(resource_type, resource_id):
-    if db.connect():
-        resource = db.get_resource(resource_type, resource_id)
-        db.close()
+    if db_reader.connect():
+        resource = db_reader.get_resource(resource_type, resource_id)
+        db_reader.close()
         return jsonify(resource)
     else:
         return (
@@ -74,13 +80,13 @@ def get_fhir_data_by_id(resource_type, resource_id):
 
 @app.route("/get-fhir-data", methods=["GET"])
 def get_fhir_data():
-    if db.connect():
-        organisations_resources = db.get_all_resources("organization")
-        medication_resources = db.get_all_resources("medication")
-        practitioners_resources = db.get_all_resources("practitioner")
-        medication_request_resources = db.get_all_resources("medicationrequest")
-        medication_dispense_resources = db.get_all_resources("medicationdispense")
-        db.close()
+    if db_reader.connect():
+        organisations_resources = db_reader.get_all_resources("organization")
+        medication_resources = db_reader.get_all_resources("medication")
+        practitioners_resources = db_reader.get_all_resources("practitioner")
+        medication_request_resources = db_reader.get_all_resources("medicationrequest")
+        medication_dispense_resources = db_reader.get_all_resources("medicationdispense")
+        db_reader.close()
         response = {
             "Organisations": organisations_resources,
             "Medications": medication_resources,
@@ -99,9 +105,9 @@ def get_fhir_data():
 
 @app.route("/get-rx-identifier", methods=["GET"])
 def get_rx_identifier():
-    if db.connect():
-        rx_identifier = db.get_rx_identifier()
-        db.close()
+    if db_reader.connect():
+        rx_identifier = db_reader.get_rx_identifier()
+        db_reader.close()
         return jsonify(rx_identifier)
     else:
         return (
@@ -115,44 +121,18 @@ def get_rx_identifier():
 def provide_prescription():
     fhir_data = request.json
 
-    # Listen der Ressourcentypen
-    resource_types_with_rx_identifier = ["MedicationRequest", "Medication"]
-    global_resource_types = ["Organization", "Practitioner"]
-
-    # Kombinieren Sie beide Listen für die Validierung
-    resource_types = resource_types_with_rx_identifier + global_resource_types
-
-    if not validate_fhir_data(fhir_data, set(resource_types)):
-        return send_response("Invalid FHIR data", 400)
-
     try:
-        params = extract_parameters(fhir_data, resource_types)
-        if not params:
-            raise ValueError("Required parameters not found")
-        rx_identifier = (
-            params.get("MedicationRequest", {}).get("identifier", [{}])[0].get("value")
-        )
-        print(rx_identifier)
-        logging.info(f"RxPrescriptionProcessIdentifier: {rx_identifier}")
-
-        db.connect()
-        for resource_type in resource_types:
-            if resource_type in params:
-                # Verwenden Sie den rx_identifier nur für bestimmte Ressourcentypen
-                if resource_type in resource_types_with_rx_identifier:
-                    db.create_resource(
-                        resource_type, params[resource_type], rx_identifier
-                    )
-                else:
-                    db.create_resource(resource_type, params[resource_type])
-
-                logging.info(f"{resource_type}: {params[resource_type].get('name')}")
-        db.close()
-        return send_response("Dispensation cancelled successfully")
+        exspected_ressource_types = ["MedicationRequest", "Medication", "Organization", "Practitioner"]
+        if not fhir_validator.validate_fhir_data(fhir_data, set(exspected_ressource_types)):
+            return send_response("Invalid FHIR data", 400)
+        
+        prescription_controller.handle_prescription(fhir_data)
+        return send_response("Prescription provided successfully")
     
-    except DuplicatePrescriptionError:
+    except DuplicateMedicationRequestError:
         return send_response("Duplicate prescription", 409)
     except Exception as e:
+        logging.error(e)
         return send_response(str(e), 500)
 
 
@@ -199,18 +179,19 @@ def provide_dispensation():
 
 
         # Create or Update resources in a loop
-        db.connect()
+        db_writer.connect()
         for resource_type in resource_types: 
             if resource_type in params:
                 # Verwenden Sie den rx_identifier nur für bestimmte Ressourcentypen
                 if resource_type in resource_types_with_rx_identifier:
-                    db.create_resource(resource_type, params[resource_type], rx_identifier)
+                    db_writer.create_or_update_resource(resource_type, params[resource_type], rx_identifier)
                 else:
-                    db.create_resource(resource_type, params[resource_type])
+                    db_writer.create_or_update_resource(resource_type, params[resource_type])
 
                 logging.info(f"{resource_type}: {params[resource_type].get('name')}")
         return send_response("Dispensation provided successfully")
     except Exception as e:
+        logging.error(e)
         return send_response(str(e), 500)
 
 
@@ -232,10 +213,6 @@ def cancel_dispensation():
 
     except Exception as e:
         return send_response(str(e), 500)
-
-
-class DuplicatePrescriptionError(Exception):
-    pass
 
 
 if __name__ == "__main__":
