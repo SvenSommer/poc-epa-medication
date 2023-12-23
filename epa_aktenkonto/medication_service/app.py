@@ -23,26 +23,6 @@ dispensation_controller = DispensationController(db_reader,db_writer)
 def send_response(message, status_code=200):
     return jsonify({"message": message, "status_code": status_code}), status_code
 
-
-
-def extract_parameters(fhir_data, required_params):
-    if not fhir_data.get("parameter"):
-        return None
-
-    parameters = {
-        param.get("name"): param.get("resource")
-        for param in fhir_data.get("parameter", [])
-    }
-    if not all(param in parameters for param in required_params):
-        return None
-
-    return parameters
-
-
-def validate_fhir_data(fhir_data, required_types):
-    received_types = {param.get("name") for param in fhir_data.get("parameter", [])}
-    return required_types.issubset(received_types)
-
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
@@ -51,36 +31,22 @@ def index():
 def resources():
     return render_template("resources.html")
 
-
 @app.route("/get-fhir-data/<resource_type>", methods=["GET"])
 def get_fhir_data_by_type(resource_type):
     if db_reader.connect():
         resources = db_reader.get_all_resources(resource_type)
-        db_reader.close()
         return jsonify(resources)
     else:
-        return (
-            jsonify(
-                {"status": f"Medication Service: running - Database Connection Failed"}
-            ),
-            500,
-        )
+        return send_response("Medication Service: running - Database Connection Failed", 500)
 
 
 @app.route("/get-fhir-data/<resource_type>/<resource_id>", methods=["GET"])
 def get_fhir_data_by_id(resource_type, resource_id):
     if db_reader.connect():
         resource = db_reader.get_resource(resource_type, resource_id)
-        db_reader.close()
         return jsonify(resource)
     else:
-        return (
-            jsonify(
-                {"status": f"Medication Service: running - Database Connection Failed"}
-            ),
-            500,
-        )
-
+        return send_response("Medication Service: running - Database Connection Failed", 500)
 
 @app.route("/get-fhir-data", methods=["GET"])
 def get_fhir_data():
@@ -99,12 +65,7 @@ def get_fhir_data():
         }
         return jsonify(response)
     else:
-        return (
-            jsonify(
-                {"status": f"Medication Service: running - Database Connection Failed"}
-            ),
-            500,
-        )
+        return send_response("Medication Service: running - Database Connection Failed", 500)
 
 @app.route("/get-rx-identifier", methods=["GET"])
 def get_rx_identifier():
@@ -112,17 +73,11 @@ def get_rx_identifier():
         rx_identifier = db_reader.get_rx_identifier()
         return jsonify(rx_identifier)
     else:
-        return (
-            jsonify(
-                {"status": f"Medication Service: running - Database Connection Failed"}
-            ),
-            500,
-        )
+        return send_response("Medication Service: running - Database Connection Failed", 500)
 
 @app.route("/$provide-prescription", methods=["POST"])
 def provide_prescription():
     fhir_data = request.json
-
     try:
         exspected_ressource_types = ["MedicationRequest", "Medication", "Organization", "Practitioner"]
         if not fhir_validator.validate_fhir_data(fhir_data, set(exspected_ressource_types)):
@@ -142,7 +97,7 @@ def provide_prescription():
 def cancel_prescription():
     fhir_data = request.json
 
-    if not validate_fhir_data(fhir_data, {"RxPrescriptionProcessIdentifier"}):
+    if not fhir_validator.validate_fhir_data(fhir_data, {"RxPrescriptionProcessIdentifier"}):
         return send_response("Invalid FHIR data", 400)
 
     try:
@@ -174,7 +129,7 @@ def provide_dispensation():
 def cancel_dispensation():
     fhir_data = request.json
 
-    if not validate_fhir_data(fhir_data, {"RxPrescriptionProcessIdentifier"}):
+    if not fhir_validator.validate_fhir_data(fhir_data, {"RxPrescriptionProcessIdentifier"}):
         return send_response("Invalid FHIR data", 400)
 
     try:

@@ -143,34 +143,36 @@ tr:hover {
     background-color: #e0f8d8; /* A very light green color */
 }
 .custom-button {
-    color: white !important; /* Weiße Textfarbe */
-    background-color: #444 !important;
-    border: 1px solid #555 !important;; /* Dezenter Rahmen */
+    color: #333 !important; /* Dark text color */
+    background-color: #f5f5f5 !important; /* Light whitish background color */
+    border: 1px solid #ddd !important; /* Subtle border */
     padding: 14px 16px; /* Padding */
-    margin: 5px 0; /* Abstand */
-    width: 100%; /* Volle Breite */
-    transition: all 0.3s ease; /* Weiche Übergangseffekte */
-    text-align: center; /* Zentrieren des Textes */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Leichter Schatten für Tiefe */
+    margin: 5px 0; /* Margin */
+    width: 80%; /* Full width */
+    transition: all 0.3s ease; /* Smooth transition effects */
+    text-align: center; /* Centering text */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Light shadow for depth */
 }
 
 .custom-button:hover {
-    background-color: #333 !important;; /* Dunklere Hintergrundfarbe beim Hover */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* Stärkerer Schatten beim Hover */
+    background-color: #e6e6e6 !important; /* Slightly darker background on hover */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Stronger shadow on hover */
 }
 
 .custom-button-primary {
-    background-color: #4CAF50; /* Primäre Farbe */
+    background-color: #e0f8d8; /* Primary light green color */
+    color: #333; /* Dark text color for contrast */
 }
 
 .custom-button-danger {
-    background-color: #f44336; /* Gefahrenfarbe */
+    background-color: #fadcdc; /* Light red color for danger buttons */
+    color: #333; /* Dark text color for contrast */
 }
 
 .custom-button-primary:hover {
-    background-color: #3e8e41; /* Dunklere Farbe beim Hover für primären Button */
+    background-color: #ccebc5; /* Slightly darker shade on hover for primary button */
 }
 
 .custom-button-danger:hover {
-    background-color: #d32f2f; /* Dunklere Farbe beim Hover für Gefahren-Button */
+    background-color: #fab4b4; /* Slightly darker shade on hover for danger button */
 }
