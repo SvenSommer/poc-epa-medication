@@ -74,6 +74,10 @@ function buildMedicationDispensesSummary(resourceData, summary) {
 
     summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}, Status: ${status}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}`, 'summary-property'));
+    if (resourceData.identifier) {
+        const unique_identifier = resourceData.identifier.find(ident => ident?.system?.includes('epa-medication-dispense-unique-identifier'))?.value;
+        summary.appendChild(createSummaryElement(`Unique Identifier: ${unique_identifier}`, 'summary-property'));
+    }
     summary.appendChild(createSummaryElement(`Handed Over: ${whenHandedOver}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Status: ${status}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Substituted: ${wasSubstituted}`, 'summary-property'));

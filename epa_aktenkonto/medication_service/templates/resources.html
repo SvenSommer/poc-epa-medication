@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <title>FHIR Datenansicht</title>
     <link rel="stylesheet" href="../static/style.css">
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -17,16 +19,15 @@
         <h1 class="text-center">Medication Service</h1>
         <nav>
             <ul>
-                <li><a href="control">Fachdienst Controller</a></li>
-                <li class="active"><a href="ressources">Ressourcen List</a></li>
+                <li><a href="control">Medication Service</a></li>
+                <li class="active"><a href="ressources">FHIR Ressourcen</a></li>
                 <li><a href="medlist">Medikationsliste</a></li>
-                <li><a href="medplan">Medicationsplan</a></li>
             </ul>
         </nav>
         <div id="accordion-container"></div>
     </main>
     <div class="darkside detail-container" id="detail-container">
-        <h1>FHIR Ressource</h1>
+        <h1>FHIR Ressourcen</h1>
         <!-- Das formatierte JSON wird hier angezeigt -->
         <pre><code class="json" id="json-code"></code></pre>
     </div>

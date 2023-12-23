@@ -6,7 +6,7 @@ from controller.database.database_writer import DatabaseWriter
 from fhirValidator.fhirValidator import FHIRValidator
 from controller.fhir.prescriptionController import PrescriptionController
 from controller.fhir.medicationRequestController import DuplicateMedicationRequestError
-from controller.fhir.dispensationController import DispensationController
+from controller.fhir.dispensationController import DispensationController, MedicationRequestMissingError
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -120,6 +120,8 @@ def provide_dispensation():
         dispensation_controller.handle_provide_dispensation(fhir_data)
         return send_response("Dispensation provided successfully")
     
+    except MedicationRequestMissingError as e:
+        return send_response(str(e), 422)
     except Exception as e:
         logging.error(e)
         return send_response(str(e), 500)

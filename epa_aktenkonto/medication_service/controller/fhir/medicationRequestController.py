@@ -39,11 +39,14 @@ class MedicationRequestController(ePAFHIRRessource):
         # ...
 
         return medication_request
+    
+    def find_medicationRequest_by_unique_ressource_identifier(self, unique_ressource_identifier):
+        return self.db_reader.get_resource_by_unique_ressource_identifier("MedicationRequest", unique_ressource_identifier)
 
     def store(self, medication_request):
         rx_identifier =  self.getRxIdentifier(medication_request)
         unique_ressource_identifier = self.get_unique_identifier(medication_request)
-        if self.db_reader.find_resource_by_unique_ressource_identifier("MedicationRequest", unique_ressource_identifier):
+        if self.find_medicationRequest_by_unique_ressource_identifier(unique_ressource_identifier):
             raise DuplicateMedicationRequestError("MedicationRequest already exists")
         self.db_writer.create_or_update_resource("MedicationRequest", medication_request, unique_ressource_identifier, rx_identifier)
         return rx_identifier

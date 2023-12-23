@@ -10,13 +10,13 @@ main {
     padding-left: 3em;
 }
 
-/* Grundlegende Stil-Definitionen für die Navbar */
+
 nav ul {
     list-style-type: none;
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #333; /* Dunkler Hintergrund */
+    background-color: #333; 
 }
 
 nav ul li {
@@ -25,27 +25,24 @@ nav ul li {
 
 nav ul li a {
     display: block;
-    color: white; /* Weiße Textfarbe */
+    color: white; 
     text-align: center;
-    padding: 14px 16px; /* Innenabstand */
+    padding: 14px 16px;
     text-decoration: none;
 }
 
-nav ul li a.active {
-    color: #4CAF50; /* Grüne Farbe für aktive Links */
-    font-weight: bold; /* Fettschrift für aktive Links */
-}
 
-/* Stil-Änderungen beim Überfahren mit der Maus */
+
 nav ul li a:hover {
-    background-color: #111; /* Dunklere Hintergrundfarbe beim Hover */
+    background-color: #111; 
+    transition: background-color 0.3s; 
 }
 
-/* Responsive Design: Dropdown-Menü für kleinere Bildschirme */
+
 @media screen and (max-width: 600px) {
     nav ul li {
         float: none;
-        width: 100%; /* Volle Breite für mobile Ansicht */
+        width: 100%;
     }
 }
 
@@ -76,7 +73,7 @@ nav ul li a:hover {
     font-size: 15px;
     transition: 0.4s;
 }
-
+.active,
 .accordion:hover {
     background-color: #ddd;
 }
