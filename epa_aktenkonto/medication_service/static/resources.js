@@ -21,18 +21,39 @@ function createPanel(container) {
 }
 
 function createSummaryForResource(key, resourceData) {
-    let summary = document.createElement('div');
-    summary = handleSummaryCreation(key, resourceData, summary);
-    summary.className = 'summary-div';
-    return summary;
+    let summaryWrapper = document.createElement('div');
+    summaryWrapper.className = 'summary-wrapper';
+
+    let detailedSummary = document.createElement('div');
+    detailedSummary.className = 'detailed-summary';
+    detailedSummary.style.display = 'none'; 
+    detailedSummary = handleSummaryCreation(key, resourceData, detailedSummary);
+
+    let summaryLine = document.createElement('div');
+    summaryLine.className = 'summary-line';
+    if (detailedSummary.firstChild) {
+        summaryLine.textContent = detailedSummary.firstChild.textContent; 
+        detailedSummary.removeChild(detailedSummary.firstChild);
+    } else {
+        summaryLine.textContent = `Summary for ${key}`; 
+    }
+    summaryWrapper.appendChild(summaryLine);
+    summaryWrapper.appendChild(detailedSummary);
+
+    summaryLine.addEventListener('click', () => {
+        detailedSummary.style.display = detailedSummary.style.display === 'none' ? 'block' : 'none';
+    });
+
+    return summaryWrapper;
 }
+
 
 function handleSummaryCreation(key, resourceData, summary) {
     switch (key) {
-        case 'MedicationDispenses':
-            return buildMedicationDispensesSummary(resourceData.MedicationDispense, summary);
         case 'MedicationRequests':
             return buildMedicationRequestsSummary(resourceData.MedicationRequest, summary);
+        case 'MedicationDispenses':
+            return buildMedicationDispensesSummary(resourceData.MedicationDispense, summary);
         case 'Organisations':
             return buildOrganisationsSummary(resourceData.Organization, summary);
         case 'Medications':
@@ -51,6 +72,7 @@ function buildMedicationDispensesSummary(resourceData, summary) {
     const status = resourceData.status;
     const wasSubstituted = resourceData.substitution?.wasSubstituted;
 
+    summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}, Status: ${status}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Handed Over: ${whenHandedOver}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Status: ${status}`, 'summary-property'));
@@ -68,6 +90,7 @@ function buildMedicationRequestsSummary(resourceData, summary) {
     const status = resourceData.status;
     const substitutionAllowed = resourceData.substitution?.allowedBoolean;
 
+    summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}, Status: ${status}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Authored On: ${authoredOn}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Quantity: ${quantity_value} ${quantity_code}`, 'summary-property'));
@@ -83,6 +106,7 @@ function buildOrganisationsSummary(resourceData, summary) {
     const name = resourceData.name;
     const type = resourceData.type?.[0]?.coding?.[0]?.display;
 
+    summary.appendChild(createSummaryElement(`Type: ${type}, Name: ${name}, Telematik ID: ${telematikId}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Telematik ID: ${telematikId}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Type: ${type}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Name: ${name}`, 'summary-property'));
@@ -95,6 +119,7 @@ function buildMedicationsSummary(resourceData, summary) {
     const code = resourceData.code?.coding?.[0]?.code;
     const display = resourceData.code?.coding?.[0]?.display;
     const status = resourceData.status;
+    summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}, Status: ${status}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}`, 'summary-property'));
     console.log(resourceData.identifier)
     if (resourceData.identifier) {
@@ -112,6 +137,7 @@ function buildPractitionersSummary(resourceData, summary) {
     const telematikId = resourceData.identifier.find(ident => ident.system.includes('telematik-id'))?.value;
     const name = resourceData.name?.[0]?.text;
     const qualification = resourceData.qualification
+    summary.appendChild(createSummaryElement(`Name: ${name}, Telematik ID: ${telematikId}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Telematik ID: ${telematikId}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Name: ${name}`, 'summary-property'));
     for (const qual of qualification) {
@@ -123,14 +149,25 @@ function buildPractitionersSummary(resourceData, summary) {
 }
 
 
-
 function initializeAccordion() {
     window.addEventListener('DOMContentLoaded', () => {
         fetch('/get-fhir-data')
             .then(response => response.json())
             .then(data => {
                 const container = document.getElementById('accordion-container');
-                Object.keys(data).forEach(key => {
+                // Custom order for resource groups
+                const order = ['MedicationRequests', 'MedicationDispenses', 'Medications'];
+
+                // Sort keys based on the predefined order
+                const sortedKeys = Object.keys(data).sort((a, b) => {
+                    let indexA = order.indexOf(a);
+                    let indexB = order.indexOf(b);
+                    indexA = indexA === -1 ? Infinity : indexA;
+                    indexB = indexB === -1 ? Infinity : indexB;
+                    return indexA - indexB;
+                });
+
+                sortedKeys.forEach(key => {
                     const accordion = createAccordionItem(key, data[key], container);
                     const panel = createPanel(container);
 
@@ -139,7 +176,6 @@ function initializeAccordion() {
                         const summary = createSummaryForResource(key, resourceData);
                         panel.appendChild(summary);
 
-                        // Add event listeners
                         summary.addEventListener('click', () => {
                             const codeElement = document.getElementById('json-code');
                             codeElement.textContent = JSON.stringify(resourceData, null, 2);

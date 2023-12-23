@@ -65,48 +65,77 @@ nav ul li a:hover {
 }
 
 .accordion {
+    background-color: #f2f2f2;
+    color: #444;
     cursor: pointer;
-    padding: 18px;
+    padding: 10px;
     width: 100%;
-    text-align: left;
     border: none;
+    text-align: left;
     outline: none;
+    font-size: 15px;
     transition: 0.4s;
 }
 
-.active,
 .accordion:hover {
+    background-color: #ddd;
+}
+
+.accordion.active {
     background-color: #ccc;
 }
 
 .panel {
     padding: 0 18px;
-    display: none;
     background-color: white;
+    display: none;
     overflow: hidden;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
 }
 
-.summary-div {
-    background-color: #f2f2f2;
+.summary-wrapper {
+    border: 1px solid #ddd;
+    margin: 5px 0;
+}
+
+.summary-line {
+    background-color: #e7e7e7;
+    color: #333;
     padding: 10px;
-    margin-bottom: 5px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    font-size: 14px;
+    border-bottom: 1px solid #ddd;
 }
 
-.summary-div:hover {
-    background-color: #eaeaea;
+.summary-line:hover {
+    background-color: #d7d7d7;
 }
+
+.detailed-summary {
+    display: none;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+.summary-property {
+    margin-bottom: 5px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.summary-property:last-child {
+    margin-bottom: 0;
+}
+
 
 .detail-container {
     margin-top: 2em;
     padding: 1em;
     background-color: #282c34;
     color: #ffffff;
-    max-height: 800px; /* Beispielhöhe, an Ihre Bedürfnisse anpassbar */
-    overflow-y: auto; /* Ermöglicht das Scrollen, wenn der Inhalt die max-height überschreitet */
+    max-height: 800px; 
+    overflow-y: auto; 
 }
 
 .detail-container pre {
