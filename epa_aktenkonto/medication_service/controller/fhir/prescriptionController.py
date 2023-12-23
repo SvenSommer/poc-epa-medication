@@ -32,7 +32,7 @@ class PrescriptionController:
             rx_identifier = self.fhir_helper.extract_value_identifier_by_name(fhir_data, "RxPrescriptionProcessIdentifier")
             self.medication_request_controller.update_status(rx_identifier, "cancelled")
             self.medication_dispense_controller.update_status(rx_identifier, "cancelled")
-            self.medication_controller.update_status(rx_identifier, "incative")
+            self.medication_controller.update_status(rx_identifier, "inactive")
 
         except Exception as e:
             logging.error(e)

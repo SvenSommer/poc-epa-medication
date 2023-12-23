@@ -9,8 +9,6 @@ class MedicationDispenseController(ePAFHIRRessource):
         self.fhir_helper = FHIRHelper()
 
     def get_unique_identifier(self, medication_dispense):
-        logging.info("get_unique_identifier")
-        logging.info(medication_dispense)
         return self.fhir_helper.get_identifier_by_system(medication_dispense,"MedicationDispense", "https://gematik.de/fhir/epa-medication/sid/epa-medication-dispense-unique-identifier")
 
     def set_unique_identifier(self, medication_dispense):
