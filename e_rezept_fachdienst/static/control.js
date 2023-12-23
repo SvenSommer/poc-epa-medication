@@ -4,18 +4,17 @@ function showBanner(message, type) {
     $('#banner').html(banner);
     setTimeout(() => $('#banner').html(''), 7000); // Banner will disappear after 3 seconds
 }
-
 let logStorage = [];
 function addLogEntry(action, url, requestPayload, response) {
-    logStorage.unshift({ action, url, requestPayload, response });
+    const timestamp = new Date().toISOString();
 
+    logStorage.unshift({ timestamp, action, url, requestPayload, response });
+    
     if (logStorage.length > 5) {
         logStorage.pop();
     }
     updateLogDisplay();
 }
-
-
 
 function updateLogDisplay() {
     let logTable = $('#logTableBody');
@@ -26,6 +25,7 @@ function updateLogDisplay() {
         let isError = log.response.status_code && log.response.status_code !== 200;
 
         let row = `<tr${isError ? ' class="error-row"' : ''}>
+            <td>${log.timestamp}</td>
             <td>${log.action}</td>
             <td>${log.url}</td>
             <td>${log.requestPayload.rxPrescriptionProcessIdentifier}</td>
