@@ -106,8 +106,8 @@ class MedicationController(ePAFHIRRessource):
             existing_medication_id = existing_medications[0][0].get("Medication", {}).get("id")
             provenance = self.provenance_controller.create(existing_medication_id, new_medication_id)
             self.db_writer.create_or_update_resource("Provenance", provenance, new_medication_id, rx_identifier)
-            self.set_new_status(existing_medications[0], 'active')
-            self.db_writer.create_or_update_resource("Medication", existing_medications[0][0], unique_resource_identifier, rx_identifier)
+           # self.set_new_status(existing_medications[0], 'active')
+           # self.db_writer.create_or_update_resource("Medication", existing_medications[0][0], unique_resource_identifier, rx_identifier)
         else:
             self.add_unique_identifer(new_medication, unique_resource_identifier)
             self.db_writer.create_or_update_resource("Medication", new_medication, unique_resource_identifier, rx_identifier)
