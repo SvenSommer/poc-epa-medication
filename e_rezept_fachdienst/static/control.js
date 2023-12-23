@@ -10,7 +10,7 @@ function addLogEntry(action, url, requestPayload, response) {
 
     logStorage.unshift({ timestamp, action, url, requestPayload, response });
     
-    if (logStorage.length > 5) {
+    if (logStorage.length > 10) {
         logStorage.pop();
     }
     updateLogDisplay();
@@ -21,10 +21,17 @@ function updateLogDisplay() {
     logTable.html('');
 
     logStorage.forEach(log => {
-        // Check if the status code is not 200
-        let isError = log.response.status_code && log.response.status_code !== 200;
+        // Determine if the request was successful (status code 200)
+        let isSuccess = log.response.status_code === 200;
 
-        let row = `<tr${isError ? ' class="error-row"' : ''}>
+        let rowClass = '';
+        if (isSuccess) {
+            rowClass = ' class="success-row"';
+        } else if (log.response.status_code && log.response.status_code !== 200) {
+            rowClass = ' class="error-row"';
+        }
+
+        let row = `<tr${rowClass}>
             <td>${log.timestamp}</td>
             <td>${log.action}</td>
             <td>${log.url}</td>

@@ -139,6 +139,9 @@ tr:hover {
     background-color: #ffb3b3; /* Softer red */
 }
 
+.success-row {
+    background-color: #e0f8d8; /* A very light green color */
+}
 .custom-button {
     color: white !important; /* Weiße Textfarbe */
     background-color: #444 !important;
