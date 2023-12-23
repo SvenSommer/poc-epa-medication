@@ -54,8 +54,8 @@ class FHIRHelper:
         logging.debug("FHIR resource: %s", json.dumps(fhir_resource, indent=4))
 
         if resource_type not in fhir_resource:
-            logging.error("FHIR resource does not contain '%s'", resource_type)
-            raise ValueError(f"FHIR resource does not contain '{resource_type}'")
+            logging.error("Error: Searching for identifier with system URL. But FHIR resource does not contain '%s'", resource_type)
+            raise ValueError(f"Error: Searching for identifier with system URL. But FHIR resource does not contain '{resource_type}'")
 
         resource_data = fhir_resource[resource_type]
 
@@ -84,8 +84,8 @@ class FHIRHelper:
         logging.debug("Extracting extensions from resource type: %s", resource_type)
 
         if resource_type not in fhir_resource:
-            logging.error("FHIR resource does not contain '%s'", resource_type)
-            raise ValueError(f"FHIR resource does not contain '{resource_type}'")
+            logging.error("Error: Extracting extensions from resource type. But FHIR resource does not contain '%s'", resource_type)
+            raise ValueError(f"Error: Extracting extensions from resource type. But FHIR resource does not contain '{resource_type}'")
 
         resource_data = fhir_resource[resource_type]
 
@@ -109,8 +109,8 @@ class FHIRHelper:
         logging.debug("Extracting first extension value from resource type: %s with URL: %s", resource_type, extension_url)
 
         if resource_type not in fhir_resource:
-            logging.error("FHIR resource does not contain '%s'", resource_type)
-            raise ValueError(f"FHIR resource does not contain '{resource_type}'")
+            logging.error("Error: Trying to extract first extension value. But FHIR resource does not contain '%s'", resource_type)
+            raise ValueError(f"Error: Trying to extract first extension value. But FHIR resource does not contain '{resource_type}'")
 
         resource_data = fhir_resource[resource_type]
 

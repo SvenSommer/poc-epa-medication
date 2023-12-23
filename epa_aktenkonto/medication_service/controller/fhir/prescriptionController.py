@@ -18,10 +18,10 @@ class PrescriptionController:
 
     def handle_provide_prescription(self, fhir_data):
         try:
-            self._store_medicationRequest(fhir_data)
-            self._store_medication(fhir_data)
-            self._store_Organization(fhir_data)
-            self._store_Practitioner(fhir_data)
+            self.store_medicationRequest(fhir_data)
+            self.store_medication(fhir_data)
+            self.store_Organization(fhir_data)
+            self.store_Practitioner(fhir_data)
 
         except Exception as e:
             logging.error(e)
@@ -39,18 +39,18 @@ class PrescriptionController:
             raise e
 
 
-    def _store_medicationRequest(self, fhir_data):
+    def store_medicationRequest(self, fhir_data):
         medication_request = self.fhir_helper.extract_parameters_by_type(fhir_data, "MedicationRequest")
         return self.medication_request_controller.store(medication_request)
 
-    def _store_medication(self, fhir_data):
+    def store_medication(self, fhir_data):
         medication = self.fhir_helper.extract_parameters_by_type(fhir_data, "Medication")
         return self.medication_controller.store(medication)
 
-    def _store_Organization(self, fhir_data):
+    def store_Organization(self, fhir_data):
         organization = self.fhir_helper.extract_parameters_by_type(fhir_data, "Organization")
         return self.organization_controller.store(organization)
 
-    def _store_Practitioner(self, fhir_data):
+    def store_Practitioner(self, fhir_data):
         practitioner = self.fhir_helper.extract_parameters_by_type(fhir_data, "Practitioner")
         return self.practitioner_controller.store(practitioner)

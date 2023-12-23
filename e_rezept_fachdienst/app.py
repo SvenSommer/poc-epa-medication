@@ -3,6 +3,8 @@ import json
 import os
 import logging
 import requests
+from datetime import datetime
+from tzlocal import get_localzone
 from requests.exceptions import RequestException
 from fhir.resources import FHIRAbstractModel
 from fhir.resources.parameters import Parameters, ParametersParameter
@@ -27,7 +29,12 @@ def create_medication_request(rxPrescriptionProcessIdentifier):
         organization = OrganizationCreator.get_example_farmacy_organization()
         practitioner = PractitionerCreator.get_example_practitioner()
         medication_request = MedicationRequestCreator.create_medication_request(
-            medication.id, rxPrescriptionProcessIdentifier, "Patient/67890", "Take one tablet daily", True
+            medication.id, 
+            rxPrescriptionProcessIdentifier,
+            "Patient/67890", 
+            datetime.now(get_localzone()).replace(microsecond=0).isoformat(),
+            "Take one tablet daily", 
+            True
         )
 
         params = Parameters.construct()
@@ -77,7 +84,7 @@ def cancel_prescription(rxPrescriptionProcessIdentifier):
 
 def create_medication_dispense(rxPrescriptionProcessIdentifier, when_handed_over):
     try:
-        medication = MedicationCreator.get_example_medication()
+        medication = MedicationCreator.get_example_medication_pzn(rxPrescriptionProcessIdentifier)
         organization = OrganizationCreator.get_example_farmacy_organization()
         medication_dispense = MedicationDispenseCreator.create_medication_dispense(
             rxPrescriptionProcessIdentifier, medication.id, "Patient/67890", organization.id, "MedicationRequest/123", when_handed_over, "Take one tablet daily", True
@@ -106,6 +113,8 @@ def send_dispensation(params_resource):
         logging.error(f"HTTP request error in send_dispense: {err}")
     except Exception as e:
         logging.error(f"Error in send_dispense: {e}")
+    
+    return response.json()
 
 def cancel_dispensation(rxPrescriptionProcessIdentifier):
     payload = {
@@ -122,6 +131,8 @@ def cancel_dispensation(rxPrescriptionProcessIdentifier):
         logging.error(f"HTTP request error in cancel_dispensation: {err}")
     except Exception as e:
         logging.error(f"Error in cancel_dispensation: {e}")
+
+    return response.json()
 
 def fhir_model_to_json(model: FHIRAbstractModel) -> dict:
     return json.loads(model.json())
@@ -161,7 +172,8 @@ def api_send_dispensation():
         rx_prescription_process_identifier = request.json.get('rxPrescriptionProcessIdentifier', '')
         if not rx_prescription_process_identifier:
             return jsonify({"error": "Missing rxPrescriptionProcessIdentifier"}), 400
-        dispense_resources = create_medication_dispense(rx_prescription_process_identifier, "2023-12-20T18:23:00+01:00")
+        dispense_resources = create_medication_dispense(rx_prescription_process_identifier, 
+                                                        datetime.now(get_localzone()).replace(microsecond=0).isoformat())
         return send_dispensation(dispense_resources)
     except Exception as e:
         return jsonify({"error": str(e)}), 500

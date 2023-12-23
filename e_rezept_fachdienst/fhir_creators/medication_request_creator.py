@@ -7,7 +7,6 @@ from fhir.resources.reference import Reference
 from fhir.resources.dosage import Dosage
 from fhir.resources.meta import Meta
 from datetime import datetime
-from tzlocal import get_localzone
 
 
 class MedicationRequestCreator:
@@ -16,6 +15,7 @@ class MedicationRequestCreator:
         medication_reference: str,
         rxPrescriptionProcessIdentifier: str,
         patient_reference: str,
+        authoredOn: datetime,
         dosage_instruction_text: str,
         substitution_allowed: bool,
     ) -> MedicationRequest:
@@ -41,7 +41,7 @@ class MedicationRequestCreator:
             intent="order",
             medicationReference=Reference(reference="urn:uuid:" +medication_reference),
             subject=Reference(reference="urn:uuid:" +patient_reference),
-            authoredOn=datetime.now(get_localzone()).isoformat(),
+            authoredOn=authoredOn,
             dosageInstruction=[Dosage(text=dosage_instruction_text)],
             substitution={"allowedBoolean": substitution_allowed},
         )

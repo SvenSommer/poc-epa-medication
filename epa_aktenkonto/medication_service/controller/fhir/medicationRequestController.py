@@ -18,9 +18,9 @@ class MedicationRequestController(ePAFHIRRessource):
         medication_request = self.db_reader.get_resource_by_unique_ressource_identifier("MedicationRequest", rx_identifier)
         if not medication_request:
             raise ValueError(f"MedicationRequest with unique_ressource_identifier: '{rx_identifier}' not found")
-        medication_request = self.set_new_status(medication_request, new_status)
-        unique_ressource_identifier = self.get_unique_identifier(medication_request)
-        return self.db_writer.create_or_update_resource("MedicationRequest", medication_request, unique_ressource_identifier, rx_identifier)
+        medication_request_updated = self.set_new_status(medication_request, new_status)
+        unique_ressource_identifier = self.get_unique_identifier(medication_request_updated)
+        return self.db_writer.create_or_update_resource("MedicationRequest", medication_request_updated, unique_ressource_identifier, rx_identifier)
 
     def set_new_status(self, medication_requests, new_status):
         medication_request_tuple = medication_requests[0]

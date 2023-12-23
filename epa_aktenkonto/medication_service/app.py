@@ -6,6 +6,7 @@ from controller.database.database_writer import DatabaseWriter
 from fhirValidator.fhirValidator import FHIRValidator
 from controller.fhir.prescriptionController import PrescriptionController
 from controller.fhir.medicationRequestController import DuplicateMedicationRequestError
+from controller.fhir.dispensationController import DispensationController
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -16,6 +17,7 @@ db_reader = DatabaseReader()
 db_writer = DatabaseWriter()
 fhir_validator = FHIRValidator()
 prescription_controller = PrescriptionController(db_reader,db_writer)
+dispensation_controller = DispensationController(db_reader,db_writer)
 
 
 def send_response(message, status_code=200):
@@ -145,8 +147,8 @@ def cancel_prescription():
 
     try:
         prescription_controller.handle_cancel_prescription(fhir_data)
-
         return send_response("Prescription cancelled successfully")
+    
     except Exception as e:
         logging.error(e)
         return send_response(str(e), 500)
@@ -156,12 +158,12 @@ def cancel_prescription():
 def provide_dispensation():
     fhir_data = request.json
     try:
-        exspected_ressource_types = ["MedicationDispense", "Medication", "Organization", "Practitioner"]
+        exspected_ressource_types = ["MedicationDispense", "Medication", "Organization"]
         if not fhir_validator.validate_fhir_data(fhir_data, set(exspected_ressource_types)):
             return send_response("Invalid FHIR data", 400)
         
-        prescription_controller.handle_provide_dispensation(fhir_data)
-        return send_response("Prescription provided successfully")
+        dispensation_controller.handle_provide_dispensation(fhir_data)
+        return send_response("Dispensation provided successfully")
     
     except Exception as e:
         logging.error(e)
@@ -176,15 +178,11 @@ def cancel_dispensation():
         return send_response("Invalid FHIR data", 400)
 
     try:
-        params = extract_parameters(fhir_data, ["RxPrescriptionProcessIdentifier"])
-        if not params:
-            raise ValueError("RxPrescriptionProcessIdentifier not found in Parameters")
-
-        # TODO:  Implement the logic to cancel or reverse the dispensation here
-
+        dispensation_controller.handle_cancel_dispensation(fhir_data)
         return send_response("Dispensation cancelled successfully")
-
+    
     except Exception as e:
+        logging.error(e)
         return send_response(str(e), 500)
 
 

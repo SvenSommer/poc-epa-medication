@@ -44,8 +44,8 @@ class MedicationController(ePAFHIRRessource):
         if free_text:
             return self._generate_hash(free_text)
         
-        logging.info("FHIR resource: %s", json.dumps(medication, indent=4))
-        raise ValueError("Medication has no unique identifier")
+        logging.error("Medication has no unique identifier. Will hash the whole resource")
+        return self._generate_hash(json.dumps(medication))
 
 
     def _extract_pzn(self, medication):
