@@ -32,6 +32,7 @@ class DatabaseWriter(DatabaseConnection):
                     "DROP TABLE IF EXISTS Organization CASCADE",
                     "DROP TABLE IF EXISTS Practitioner CASCADE",
                     "DROP TABLE IF EXISTS MedicationDispense CASCADE",
+                    "DROP TABLE IF EXISTS Provenance CASCADE",
                 ]
 
         for command in drop_commands:
@@ -57,6 +58,14 @@ class DatabaseWriter(DatabaseConnection):
                     """,
                     """
                     CREATE TABLE IF NOT EXISTS Medication (
+                        identifier VARCHAR PRIMARY KEY,
+                        unique_ressource_identifier VARCHAR,
+                        rx_identifier VARCHAR,
+                        data JSONB
+                    )
+                    """,
+                    """
+                    CREATE TABLE IF NOT EXISTS Provenance (
                         identifier VARCHAR PRIMARY KEY,
                         unique_ressource_identifier VARCHAR,
                         rx_identifier VARCHAR,

@@ -60,6 +60,8 @@ function handleSummaryCreation(key, resourceData, summary) {
             return buildMedicationsSummary(resourceData.Medication, summary);
         case 'Practitioners':
             return buildPractitionersSummary(resourceData.Practitioner, summary);
+        case 'Provenances':
+            return buildProvenancesSummary(resourceData.Provenance, summary);
         default:
             summary.textContent = JSON.stringify(resourceData, null, 2);
             return summary;
@@ -68,6 +70,7 @@ function handleSummaryCreation(key, resourceData, summary) {
 
 function buildMedicationDispensesSummary(resourceData, summary) {
     const rxIdentifier = resourceData.extension.find(ext => ext.url.includes('rx-prescription-process-identifier-extension'))?.valueIdentifier?.value;
+    const medicationReference = resourceData.medicationReference?.reference;
     const whenHandedOver = resourceData.whenHandedOver;
     const status = resourceData.status;
     const wasSubstituted = resourceData.substitution?.wasSubstituted;
@@ -78,6 +81,7 @@ function buildMedicationDispensesSummary(resourceData, summary) {
         const unique_identifier = resourceData.identifier.find(ident => ident?.system?.includes('epa-medication-dispense-unique-identifier'))?.value;
         summary.appendChild(createSummaryElement(`Unique Identifier: ${unique_identifier}`, 'summary-property'));
     }
+    summary.appendChild(createSummaryElement(`Medication Reference: ${medicationReference}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Handed Over: ${whenHandedOver}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Status: ${status}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Substituted: ${wasSubstituted}`, 'summary-property'));
@@ -87,6 +91,7 @@ function buildMedicationDispensesSummary(resourceData, summary) {
 
 function buildMedicationRequestsSummary(resourceData, summary) {
     const rxIdentifier = resourceData.identifier.find(ident => ident.system.includes('rx-prescription-process-identifier'))?.value;
+    const medicationReference = resourceData.medicationReference?.reference;
     const dosageInstruction = resourceData.dosageInstruction?.[0]?.text;
     const quantity_value = resourceData.dispenseRequest?.quantity?.value;
     const quantity_code = resourceData.dispenseRequest?.quantity?.code;
@@ -96,6 +101,7 @@ function buildMedicationRequestsSummary(resourceData, summary) {
 
     summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}, Status: ${status}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Medication Reference: ${medicationReference}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Authored On: ${authoredOn}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Quantity: ${quantity_value} ${quantity_code}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Dosage Instruction: ${dosageInstruction}`, 'summary-property'));
@@ -120,16 +126,17 @@ function buildOrganisationsSummary(resourceData, summary) {
 
 function buildMedicationsSummary(resourceData, summary) {
     const rxIdentifier = resourceData.extension.find(ext => ext.url.includes('rx-prescription-process-identifier-extension'))?.valueIdentifier?.value;
+    const medicationId = resourceData.id;
     const code = resourceData.code?.coding?.[0]?.code;
     const display = resourceData.code?.coding?.[0]?.display;
     const status = resourceData.status;
     summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}, Status: ${status}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Rx Identifier: ${rxIdentifier}`, 'summary-property'));
-    console.log(resourceData.identifier)
     if (resourceData.identifier) {
         const unique_identifier = resourceData.identifier.find(ident => ident?.system?.includes('epa-medication-unique-identifier'))?.value;
         summary.appendChild(createSummaryElement(`Unique Identifier: ${unique_identifier}`, 'summary-property'));
     }
+    summary.appendChild(createSummaryElement(`Medication ID: ${medicationId}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Code: ${code}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Display: ${display}`, 'summary-property'));
     summary.appendChild(createSummaryElement(`Status: ${status}`, 'summary-property'));
@@ -152,6 +159,23 @@ function buildPractitionersSummary(resourceData, summary) {
     return summary;
 }
 
+function buildProvenancesSummary(resourceData, summary) {
+    const recorded = resourceData.recorded;
+    const agentReference = resourceData.agent[0]?.who?.reference;
+    const entityRole = resourceData.entity[0]?.role;
+    const entityReference = resourceData.entity[0]?.what?.reference;
+    const targetReferences = resourceData.target.map(target => target.reference);
+
+    summary.appendChild(createSummaryElement(`Role: ${entityRole}, Recorded: ${recorded}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Recorded: ${recorded}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Role: ${entityRole}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Agent Reference: ${agentReference}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Entity Reference: ${entityReference}`, 'summary-property'));
+    summary.appendChild(createSummaryElement(`Target References: ${targetReferences.join(', ')}`, 'summary-property'));
+
+    return summary;
+}
+
 
 function initializeAccordion() {
     window.addEventListener('DOMContentLoaded', () => {
@@ -160,7 +184,7 @@ function initializeAccordion() {
             .then(data => {
                 const container = document.getElementById('accordion-container');
                 // Custom order for resource groups
-                const order = ['MedicationRequests', 'MedicationDispenses', 'Medications'];
+                const order = ['MedicationRequests', 'MedicationDispenses', 'Medications', 'Provenances'];
 
                 // Sort keys based on the predefined order
                 const sortedKeys = Object.keys(data).sort((a, b) => {
@@ -176,16 +200,19 @@ function initializeAccordion() {
                     const panel = createPanel(container);
 
                     data[key].forEach(item => {
-                        const resourceData = item[0];
-                        const summary = createSummaryForResource(key, resourceData);
-                        panel.appendChild(summary);
+                        if (item.length > 0) {
+                            console.log(item[0])
+                            const resourceData = item[0];
+                            const summary = createSummaryForResource(key, resourceData);
+                            panel.appendChild(summary);
 
-                        summary.addEventListener('click', () => {
-                            const codeElement = document.getElementById('json-code');
-                            codeElement.textContent = JSON.stringify(resourceData, null, 2);
-                            codeElement.removeAttribute('data-highlighted');
-                            hljs.highlightElement(codeElement);
-                        });
+                            summary.addEventListener('click', () => {
+                                const codeElement = document.getElementById('json-code');
+                                codeElement.textContent = JSON.stringify(resourceData, null, 2);
+                                codeElement.removeAttribute('data-highlighted');
+                                hljs.highlightElement(codeElement);
+                            });
+                        }
                     });
 
                     accordion.addEventListener('click', function () {

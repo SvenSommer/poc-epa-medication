@@ -15,7 +15,7 @@ class MedicationRequestController(ePAFHIRRessource):
         return self.fhir_helper.get_identifier_by_system(medication_request,"MedicationRequest", "https://gematik.de/fhir/epa-medication/sid/rx-prescription-process-identifier")
 
     def update_status(self, rx_identifier, new_status):
-        medication_request = self.db_reader.get_resource_by_unique_ressource_identifier("MedicationRequest", rx_identifier)
+        medication_request = self.find_medicationRequest_by_unique_ressource_identifier("MedicationRequest", rx_identifier)
         if not medication_request:
             raise ValueError(f"MedicationRequest with unique_ressource_identifier: '{rx_identifier}' not found")
         medication_request_updated = self.set_new_status(medication_request, new_status)

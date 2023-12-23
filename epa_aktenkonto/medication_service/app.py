@@ -56,12 +56,14 @@ def get_fhir_data():
         practitioners_resources = db_reader.get_all_resources("practitioner")
         medication_request_resources = db_reader.get_all_resources("medicationrequest")
         medication_dispense_resources = db_reader.get_all_resources("medicationdispense")
+        provenance_resources = db_reader.get_all_resources("provenance")
         response = {
             "Organisations": organisations_resources,
             "Medications": medication_resources,
             "Practitioners": practitioners_resources,
             "MedicationRequests": medication_request_resources,
             "MedicationDispenses": medication_dispense_resources,
+            "Provenances": provenance_resources
         }
         return jsonify(response)
     else:
