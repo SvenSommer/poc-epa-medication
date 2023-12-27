@@ -9,10 +9,10 @@ class MedicationRequestController(ePAFHIRRessource):
 
         
     def get_unique_identifier(self, medication_request):
-        return self.fhir_helper.get_identifier_by_system(medication_request,"MedicationRequest", "https://gematik.de/fhir/epa-medication/sid/rx-prescription-process-identifier")
+        return self.fhir_helper.get_identifier_by_system(medication_request, "https://gematik.de/fhir/epa-medication/sid/rx-prescription-process-identifier")
     
     def getRxIdentifier(self, medication_request):
-        return self.fhir_helper.get_identifier_by_system(medication_request,"MedicationRequest", "https://gematik.de/fhir/epa-medication/sid/rx-prescription-process-identifier")
+        return self.fhir_helper.get_identifier_by_system(medication_request, "https://gematik.de/fhir/epa-medication/sid/rx-prescription-process-identifier")
 
     def update_status(self, rx_identifier, new_status):
         medication_request = self.find_medicationRequest_by_unique_ressource_identifier(rx_identifier)

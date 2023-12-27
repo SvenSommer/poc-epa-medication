@@ -14,7 +14,6 @@ class MedicationController(ePAFHIRRessource):
     def getRxIdentifier(self, medication):
         rx_identifier = self.fhir_helper.extract_first_extension_value(
             medication, 
-            "Medication",
             "https://gematik.de/fhir/epa-medication/StructureDefinition/rx-prescription-process-identifier-extension"
         )
 
@@ -47,6 +46,7 @@ class MedicationController(ePAFHIRRessource):
             return self._generate_hash(free_text)
         
         logging.error("Medication has no unique identifier. Will hash the whole resource")
+        #TODO: remove all identifiers before hashing the whole resource
         return self._generate_hash(json.dumps(medication))
 
 
@@ -86,7 +86,7 @@ class MedicationController(ePAFHIRRessource):
             raise ValueError("Invalid format for Medication data")
 
         if 'Medication' in medication_data:
-            medication_data['Medication']["status"] = new_status
+            medication_data["status"] = new_status
         else:
             raise ValueError("Medication data not found in the expected format")
 
@@ -114,14 +114,14 @@ class MedicationController(ePAFHIRRessource):
         return rx_identifier
 
     def add_unique_identifer(self, medication, unique_ressource_identifier):
-        if 'Medication' in medication:
-            medication_data = medication['Medication']
-            identifier = medication_data.get('identifier', [])
+        try:
+
+            identifier = medication.get('identifier', [])
             identifier.append({
                 "system": "https://gematik.de/fhir/epa-medication/sid/epa-medication-unique-identifier",
                 "value": unique_ressource_identifier
             })
-            medication_data['identifier'] = identifier
-        else:
-            raise ValueError("Medication data not found in the expected format")
+            medication['identifier'] = identifier
+        except Exception as e:
+            raise ValueError("Medication data not found in the expected format, error: " + str(e))
 

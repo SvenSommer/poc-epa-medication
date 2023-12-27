@@ -51,17 +51,17 @@ function createSummaryForResource(key, resourceData) {
 function handleSummaryCreation(key, resourceData, summary) {
     switch (key) {
         case 'MedicationRequests':
-            return buildMedicationRequestsSummary(resourceData.MedicationRequest, summary);
+            return buildMedicationRequestsSummary(resourceData, summary);
         case 'MedicationDispenses':
-            return buildMedicationDispensesSummary(resourceData.MedicationDispense, summary);
+            return buildMedicationDispensesSummary(resourceData, summary);
         case 'Organisations':
-            return buildOrganisationsSummary(resourceData.Organization, summary);
+            return buildOrganisationsSummary(resourceData, summary);
         case 'Medications':
-            return buildMedicationsSummary(resourceData.Medication, summary);
+            return buildMedicationsSummary(resourceData, summary);
         case 'Practitioners':
-            return buildPractitionersSummary(resourceData.Practitioner, summary);
+            return buildPractitionersSummary(resourceData, summary);
         case 'Provenances':
-            return buildProvenancesSummary(resourceData.Provenance, summary);
+            return buildProvenancesSummary(resourceData, summary);
         default:
             summary.textContent = JSON.stringify(resourceData, null, 2);
             return summary;

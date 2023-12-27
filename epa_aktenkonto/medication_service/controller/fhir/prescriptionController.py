@@ -16,12 +16,14 @@ class PrescriptionController:
         self.medication_dispense_controller = MedicationDispenseController(db_reader, db_writer)
 
 
-    def handle_provide_prescription(self, fhir_data):
+    def handle_provide_prescriptions(self, fhir_data):
         try:
-            self.store_medicationRequest(fhir_data)
-            self.store_medication(fhir_data)
-            self.store_Organization(fhir_data)
-            self.store_Practitioner(fhir_data)
+            resources = self.fhir_helper.extract_rx_resources(fhir_data, "RxPrescription")
+            for resource in resources:
+                self.medication_request_controller.store(resource.get('MedicationRequest'))
+                self.medication_controller.store(resource.get('Medication'))
+                self.organization_controller.store(resource.get('Organization'))
+                self.practitioner_controller.store(resource.get('Practitioner'))
 
         except Exception as e:
             logging.error(e)
@@ -37,20 +39,3 @@ class PrescriptionController:
         except Exception as e:
             logging.error(e)
             raise e
-
-
-    def store_medicationRequest(self, fhir_data):
-        medication_request = self.fhir_helper.extract_parameters_by_type(fhir_data, "MedicationRequest")
-        return self.medication_request_controller.store(medication_request)
-
-    def store_medication(self, fhir_data):
-        medication = self.fhir_helper.extract_parameters_by_type(fhir_data, "Medication")
-        return self.medication_controller.store(medication)
-
-    def store_Organization(self, fhir_data):
-        organization = self.fhir_helper.extract_parameters_by_type(fhir_data, "Organization")
-        return self.organization_controller.store(organization)
-
-    def store_Practitioner(self, fhir_data):
-        practitioner = self.fhir_helper.extract_parameters_by_type(fhir_data, "Practitioner")
-        return self.practitioner_controller.store(practitioner)

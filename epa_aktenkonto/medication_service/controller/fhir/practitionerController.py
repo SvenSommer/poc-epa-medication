@@ -9,7 +9,6 @@ class PractitionerController(ePAFHIRRessource):
     def get_unique_identifier(self, practitioner):
         identifer =  self.fhir_helper.get_identifier_by_system(
             practitioner,
-            "Practitioner",
             "https://gematik.de/fhir/sid/telematik-id",
         )
 

@@ -85,7 +85,7 @@ def provide_prescription():
         if not fhir_validator.validate_fhir_data(fhir_data, set(exspected_ressource_types)):
             return send_response("Invalid FHIR data", 400)
         
-        prescription_controller.handle_provide_prescription(fhir_data)
+        prescription_controller.handle_provide_prescriptions(fhir_data)
         return send_response("Prescription provided successfully")
     
     except DuplicateMedicationRequestError as e:

@@ -25,10 +25,22 @@ FHIR_OPERATION_URL = os.getenv("FHIR_OPERATION_URL", "http://127.0.0.1:5000")
 
 def create_medication_request(rxPrescriptionProcessIdentifier):
     try:
-        medication = MedicationCreator.get_example_medication_ingredient(rxPrescriptionProcessIdentifier)
-        organization = OrganizationCreator.get_example_farmacy_organization()
-        practitioner = PractitionerCreator.get_example_practitioner()
-        medication_request = MedicationRequestCreator.create_medication_request(
+        rx_prescription_param1 = contruct_rx_prescription_parameter(rxPrescriptionProcessIdentifier)
+        rx_prescription_param2 = contruct_rx_prescription_parameter(rxPrescriptionProcessIdentifier + "_2")
+
+        params = Parameters.construct()
+        params.parameter = [rx_prescription_param1, rx_prescription_param2]
+
+        return params
+    except Exception as e:
+        logging.error(f"Error in create_medication_request: {e}")
+        raise
+
+def contruct_rx_prescription_parameter(rxPrescriptionProcessIdentifier):
+    medication = MedicationCreator.get_example_medication_ingredient(rxPrescriptionProcessIdentifier)
+    organization = OrganizationCreator.get_example_farmacy_organization()
+    practitioner = PractitionerCreator.get_example_practitioner()
+    medication_request = MedicationRequestCreator.create_medication_request(
             medication.id, 
             rxPrescriptionProcessIdentifier,
             "Patient/67890", 
@@ -37,18 +49,16 @@ def create_medication_request(rxPrescriptionProcessIdentifier):
             True
         )
 
-        params = Parameters.construct()
-        params.parameter = [
+    rx_prescription_part = [
+            ParametersParameter.construct(name="RxPrescriptionProcessIdentifier", valueIdentifier=rxPrescriptionProcessIdentifier),
+            ParametersParameter.construct(name="MedicationRequest", resource=medication_request),
             ParametersParameter.construct(name="Medication", resource=medication),
             ParametersParameter.construct(name="Organization", resource=organization),
             ParametersParameter.construct(name="Practitioner", resource=practitioner),
-            ParametersParameter.construct(name="MedicationRequest", resource=medication_request),
         ]
 
-        return params
-    except Exception as e:
-        logging.error(f"Error in create_medication_request: {e}")
-        raise
+    rx_prescription_param = ParametersParameter.construct(name="RxPrescription", part=rx_prescription_part)
+    return rx_prescription_param
 
 def send_prescription(params_resource):
     endpoint = f"/$provide-prescription"
