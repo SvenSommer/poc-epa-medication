@@ -149,7 +149,8 @@ RUN pg_ctl start -D /var/lib/postgresql/data -l /var/lib/postgresql/log/logfile 
     && psql -c "ALTER USER $DB_USER WITH SUPERUSER;" \
     && pg_ctl stop -D /var/lib/postgresql/data
 
-# Switch back to the root user (optional, depending on further needs)
+RUN pg_ctl start -D /var/lib/postgresql/data -l /var/lib/postgresql/log/logfile
+
 USER root
 
 

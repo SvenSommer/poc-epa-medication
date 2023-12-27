@@ -25,7 +25,7 @@ FHIR_OPERATION_URL = os.getenv("FHIR_OPERATION_URL", "http://127.0.0.1:5000")
 
 def create_medication_request(rxPrescriptionProcessIdentifier):
     try:
-        medication = MedicationCreator.get_example_medication_ask(rxPrescriptionProcessIdentifier)
+        medication = MedicationCreator.get_example_medication_ingredient(rxPrescriptionProcessIdentifier)
         organization = OrganizationCreator.get_example_farmacy_organization()
         practitioner = PractitionerCreator.get_example_practitioner()
         medication_request = MedicationRequestCreator.create_medication_request(
