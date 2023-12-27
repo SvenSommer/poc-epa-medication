@@ -57,11 +57,11 @@ class MedicationCreator:
         return medication
 
     @staticmethod
-    def get_example_medication():
+    def get_example_medication(rxPrescriptionProcessIdentifier):
         return [
             MedicationCreator.create_medication(
                 medication_id=str(uuid.uuid4()),
-                rxPrescriptionProcessIdentifier="123",
+                rxPrescriptionProcessIdentifier=rxPrescriptionProcessIdentifier,
                 medication_coding=CodingObject(
                     code="08671219",
                     display="Aciclovir 800 - 1 A Pharma® 35 Tbl. N1",

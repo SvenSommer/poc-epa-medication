@@ -82,7 +82,7 @@ def provide_prescription():
     fhir_data = request.json
     try:
         exspected_ressource_types = ["MedicationRequest", "Medication", "Organization", "Practitioner"]
-        if not fhir_validator.validate_fhir_data(fhir_data, set(exspected_ressource_types)):
+        if not fhir_validator.validate_fhir_data(fhir_data, set(exspected_ressource_types), "RxPrescription"):
             return send_response("Invalid FHIR data", 400)
         
         prescription_controller.handle_provide_prescriptions(fhir_data)
@@ -116,10 +116,10 @@ def provide_dispensation():
     fhir_data = request.json
     try:
         exspected_ressource_types = ["MedicationDispense", "Medication", "Organization"]
-        if not fhir_validator.validate_fhir_data(fhir_data, set(exspected_ressource_types)):
+        if not fhir_validator.validate_fhir_data(fhir_data, set(exspected_ressource_types), "RxDispensation"):
             return send_response("Invalid FHIR data", 400)
         
-        dispensation_controller.handle_provide_dispensation(fhir_data)
+        dispensation_controller.handle_provide_dispensations(fhir_data)
         return send_response("Dispensation provided successfully")
     
     except MedicationRequestMissingError as e:

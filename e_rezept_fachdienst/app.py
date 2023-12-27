@@ -23,7 +23,7 @@ app = Flask(__name__)
 # FHIR Server Constants
 FHIR_OPERATION_URL = os.getenv("FHIR_OPERATION_URL", "http://127.0.0.1:5000")
 
-def create_medication_request(rxPrescriptionProcessIdentifier):
+def create_medication_requests(rxPrescriptionProcessIdentifier):
     try:
         rx_prescription_param1 = contruct_rx_prescription_parameter(rxPrescriptionProcessIdentifier)
         rx_prescription_param2 = contruct_rx_prescription_parameter(rxPrescriptionProcessIdentifier + "_2")
@@ -92,25 +92,35 @@ def cancel_prescription(rxPrescriptionProcessIdentifier):
         logging.error(f"Error in cancel_prescription: {e}")
     return response.json()
 
-def create_medication_dispense(rxPrescriptionProcessIdentifier, when_handed_over):
+def create_medication_dispenses(rxPrescriptionProcessIdentifier, when_handed_over):
     try:
-        medication = MedicationCreator.get_example_medication_pzn(rxPrescriptionProcessIdentifier)
-        organization = OrganizationCreator.get_example_farmacy_organization()
-        medication_dispense = MedicationDispenseCreator.create_medication_dispense(
-            rxPrescriptionProcessIdentifier, medication.id, "Patient/67890", organization.id, "MedicationRequest/123", when_handed_over, "Take one tablet daily", True
-        )
+        rx_dispensation_param = construct_rx_dispensation_parameters(rxPrescriptionProcessIdentifier, when_handed_over)
 
         params = Parameters.construct()
-        params.parameter = [
-            ParametersParameter.construct(name="Medication", resource=medication),
-            ParametersParameter.construct(name="Organization", resource=organization),
-            ParametersParameter.construct(name="MedicationDispense", resource=medication_dispense),
-        ]
+        params.parameter = [rx_dispensation_param]
 
         return params
     except Exception as e:
-        logging.error(f"Error in create_medication_dispense: {e}")
+        logging.error(f"Error in create_medication_dispenses: {e}")
         raise
+
+def construct_rx_dispensation_parameters(rxPrescriptionProcessIdentifier, when_handed_over):
+    medication = MedicationCreator.get_example_medication_ingredient(rxPrescriptionProcessIdentifier)
+    organization = OrganizationCreator.get_example_farmacy_organization()
+    medication_dispense = MedicationDispenseCreator.create_medication_dispense(
+            rxPrescriptionProcessIdentifier, medication.id, "Patient/67890", organization.id, "MedicationRequest/123", when_handed_over, "Take one tablet daily", True
+        )
+
+    rx_dispensation_part = [
+            ParametersParameter.construct(name="RxPrescriptionProcessIdentifier", valueIdentifier=rxPrescriptionProcessIdentifier),
+            ParametersParameter.construct(name="MedicationDispense", resource=medication_dispense),
+            ParametersParameter.construct(name="Medication", resource=medication),
+            ParametersParameter.construct(name="Organization", resource=organization),
+        ]
+
+    rx_dispensation_param = ParametersParameter.construct(name="RxDispensation", part=rx_dispensation_part)
+    return rx_dispensation_param
+
 
 def send_dispensation(params_resource):
     endpoint = f"/$provide-dispensation"
@@ -161,7 +171,7 @@ def api_send_prescription():
         rx_prescription_process_identifier = request.json.get('rxPrescriptionProcessIdentifier', '')
         if not rx_prescription_process_identifier:
             return jsonify({"error": "Missing rxPrescriptionProcessIdentifier"}), 400
-        prescription_resources = create_medication_request(rx_prescription_process_identifier)
+        prescription_resources = create_medication_requests(rx_prescription_process_identifier)
         return send_prescription(prescription_resources)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -182,7 +192,7 @@ def api_send_dispensation():
         rx_prescription_process_identifier = request.json.get('rxPrescriptionProcessIdentifier', '')
         if not rx_prescription_process_identifier:
             return jsonify({"error": "Missing rxPrescriptionProcessIdentifier"}), 400
-        dispense_resources = create_medication_dispense(rx_prescription_process_identifier, 
+        dispense_resources = create_medication_dispenses(rx_prescription_process_identifier, 
                                                         datetime.now(get_localzone()).replace(microsecond=0).isoformat())
         return send_dispensation(dispense_resources)
     except Exception as e:

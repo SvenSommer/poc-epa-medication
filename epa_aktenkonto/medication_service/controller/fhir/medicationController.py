@@ -75,25 +75,22 @@ class MedicationController(ePAFHIRRessource):
         if not medications:
             raise ValueError(f"Medication with RxPrescriptionProcessIdentifier: '{rx_identifier}' not found")   
         for medication in medications:
+            if isinstance(medication, tuple) and isinstance(medication[0], dict):
+                medication = medication[0]
             medication = self.set_new_status(medication, new_status)
             unique_ressource_identifier = self.get_unique_identifier(medication)
             self.db_writer.create_or_update_resource("Medication", medication, unique_ressource_identifier, rx_identifier)
 
     def set_new_status(self, medication, new_status):
-        if isinstance(medication, tuple) and isinstance(medication[0], dict):
-            medication_data = medication[0]
-        else:
+        if not isinstance(medication, dict):
             raise ValueError("Invalid format for Medication data")
-
-        if 'Medication' in medication_data:
-            medication_data["status"] = new_status
-        else:
-            raise ValueError("Medication data not found in the expected format")
+            
+        medication["status"] = new_status  # Directly assigning the new_status to the medication
 
         # Optionally update meta.versionId and meta.lastUpdated here
         # ...
 
-        return medication_data
+        return medication
 
     
     def store(self, new_medication):
@@ -115,7 +112,6 @@ class MedicationController(ePAFHIRRessource):
 
     def add_unique_identifer(self, medication, unique_ressource_identifier):
         try:
-
             identifier = medication.get('identifier', [])
             identifier.append({
                 "system": "https://gematik.de/fhir/epa-medication/sid/epa-medication-unique-identifier",

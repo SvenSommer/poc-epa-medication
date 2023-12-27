@@ -14,11 +14,13 @@ class DispensationController:
         self.medication_request_controller = MedicationRequestController(db_reader, db_writer)
        
 
-    def handle_provide_dispensation(self, fhir_data):
+    def handle_provide_dispensations(self, fhir_data):
         try:
-            self.handle_medicationDispense(fhir_data)
-            self.store_medication(fhir_data)
-            self.store_Organization(fhir_data)
+            resources = self.fhir_helper.extract_rx_resources(fhir_data, "RxDispensation")
+            for resource in resources:
+                self.handle_medicationDispense(resource.get('MedicationDispense'))
+                self.medication_controller.store(resource.get('Medication'))
+                self.organization_controller.store(resource.get('Organization'))
 
         except Exception as e:
             logging.error(e)
@@ -35,8 +37,7 @@ class DispensationController:
             logging.error(e)
             raise e
         
-    def handle_medicationDispense(self, fhir_data):
-        medication_dispense = self.fhir_helper.extract_parameters_by_type(fhir_data, "MedicationDispense")
+    def handle_medicationDispense(self, medication_dispense):
         rx_identifier = self.medication_dispense_controller.getRxIdentifier(medication_dispense)
         medication_request = self.medication_request_controller.find_medicationRequest_by_unique_ressource_identifier(rx_identifier)
         if not medication_request:
@@ -45,14 +46,6 @@ class DispensationController:
         self.medication_controller.update_status(rx_identifier, "inactive")
         self.medication_dispense_controller.store(medication_dispense)
         
-    def store_medication(self, fhir_data):
-        medication = self.fhir_helper.extract_parameters_by_type(fhir_data, "Medication")
-        return self.medication_controller.store(medication)
-    
-    def store_Organization(self, fhir_data):
-        organization = self.fhir_helper.extract_parameters_by_type(fhir_data, "Organization")
-        return self.organization_controller.store(organization)
-    
 
 class MedicationRequestMissingError(Exception):
     pass
