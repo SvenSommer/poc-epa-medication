@@ -19,7 +19,7 @@ class MedicationRequestController(ePAFHIRRessource):
     def update_status(self, rx_identifier, new_status):
         medication_request = self.find_medicationRequest_by_unique_ressource_identifier(rx_identifier)
         if not medication_request:
-            raise ValueError(f"MedicationRequest with unique_ressource_identifier: '{rx_identifier}' not found")
+            raise MedicationRequestNotFoundError(f"MedicationRequest with unique_ressource_identifier: '{rx_identifier}' not found")
         medication_request_updated = self.set_new_status(medication_request, new_status)
         unique_ressource_identifier = self.get_unique_identifier(medication_request_updated)
         return self.db_writer.create_or_update_resource("MedicationRequest", medication_request_updated, unique_ressource_identifier, rx_identifier)
@@ -57,4 +57,7 @@ class MedicationRequestController(ePAFHIRRessource):
         return rx_identifier
     
 class DuplicateMedicationRequestError(Exception):
+    pass
+
+class MedicationRequestNotFoundError(Exception):
     pass

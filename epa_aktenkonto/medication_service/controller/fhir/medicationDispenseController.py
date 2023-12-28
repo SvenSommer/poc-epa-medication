@@ -30,8 +30,7 @@ class MedicationDispenseController(ePAFHIRRessource):
     def update_status(self, rx_identifier, new_status):
         medication_dispenses = self.db_reader.get_resource_by_rx_identifier("MedicationDispense", rx_identifier)
         if not medication_dispenses:
-            logging.info(f"MedicationDispenses with unique_resource_identifier: '{rx_identifier}' not found")   
-            return None
+            raise MedicationDispenseNotFoundError(f"MedicationDispenses with unique_resource_identifier: '{rx_identifier}' not found")   
 
         for medication_dispense in medication_dispenses:
             if isinstance(medication_dispense, tuple) and isinstance(medication_dispense[0], dict):
@@ -60,6 +59,7 @@ class MedicationDispenseController(ePAFHIRRessource):
         if self.db_reader.find_resource_by_unique_ressource_identifier("MedicationDispense", unique_ressource_identifier):
             raise DuplicateMedicationDispenseError("MedicationDispense already exists")
         self.add_unique_identifer(medication_dispense, unique_ressource_identifier)
+        logging.info(f"Storing MedicationDispense with unique_ressource_identifier: '{unique_ressource_identifier}'")
         self.db_writer.create_or_update_resource("MedicationDispense", medication_dispense, unique_ressource_identifier, rx_identifier)
         return rx_identifier
     
@@ -75,4 +75,7 @@ class MedicationDispenseController(ePAFHIRRessource):
             raise ValueError("MedicationDispense data not found in the expected format, error: " + str(e))
 
 class DuplicateMedicationDispenseError(Exception):
+    pass
+
+class MedicationDispenseNotFoundError(Exception):
     pass

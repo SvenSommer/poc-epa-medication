@@ -4,7 +4,7 @@ from controller.fhir.medicationController import MedicationController
 from controller.fhir.medicationRequestController import MedicationRequestController
 from controller.fhir.organizationController import OrganizationController
 from controller.fhir.practitionerController import PractitionerController
-from controller.fhir.medicationDispenseController import MedicationDispenseController
+from controller.fhir.medicationDispenseController import MedicationDispenseController, MedicationDispenseNotFoundError
 
 class PrescriptionController:
     def __init__(self, db_reader, db_writer):
@@ -36,7 +36,9 @@ class PrescriptionController:
             self.medication_request_controller.update_status(rx_identifier, "cancelled")
             self.medication_dispense_controller.update_status(rx_identifier, "cancelled")
             self.medication_controller.update_status(rx_identifier, "inactive")
-
+        except MedicationDispenseNotFoundError as e:
+                logging.info("MedicationDispense with rx_identifier: %s not found", rx_identifier)
+                pass
         except Exception as e:
             logging.error(e)
             raise e

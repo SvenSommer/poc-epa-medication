@@ -1,6 +1,6 @@
 import logging
 from controller.fhir.fhirHelper import FHIRHelper
-from controller.fhir.medicationDispenseController import MedicationDispenseController
+from controller.fhir.medicationDispenseController import MedicationDispenseController, MedicationDispenseNotFoundError
 from controller.fhir.medicationRequestController import MedicationRequestController
 from controller.fhir.medicationController import MedicationController
 from controller.fhir.organizationController import OrganizationController
@@ -38,13 +38,22 @@ class DispensationController:
             raise e
         
     def handle_medicationDispense(self, medication_dispense):
-        rx_identifier = self.medication_dispense_controller.getRxIdentifier(medication_dispense)
-        medication_request = self.medication_request_controller.find_medicationRequest_by_unique_ressource_identifier(rx_identifier)
-        if not medication_request:
-            raise MedicationRequestMissingError(f"MedicationRequest with rx-prescription-process-identifier: '{rx_identifier}' not found.")
-        self.medication_dispense_controller.update_status(rx_identifier, "declined")
-        self.medication_controller.update_status(rx_identifier, "inactive")
-        self.medication_dispense_controller.store(medication_dispense)
+        try:
+            rx_identifier = self.medication_dispense_controller.getRxIdentifier(medication_dispense)
+            medication_request = self.medication_request_controller.find_medicationRequest_by_unique_ressource_identifier(rx_identifier)
+            if not medication_request:
+                raise MedicationRequestMissingError(f"MedicationRequest with rx-prescription-process-identifier: '{rx_identifier}' not found.")
+            try:
+                self.medication_dispense_controller.update_status(rx_identifier, "declined")
+            except MedicationDispenseNotFoundError as e:
+                logging.info("MedicationDispense with rx_identifier: %s not found", rx_identifier)
+            self.medication_controller.update_status(rx_identifier, "inactive")
+            self.medication_dispense_controller.store(medication_dispense)
+
+        except Exception as e:
+            logging.error(e)
+            raise e
+
         
 
 class MedicationRequestMissingError(Exception):

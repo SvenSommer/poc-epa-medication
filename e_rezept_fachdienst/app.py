@@ -42,8 +42,8 @@ def fhir_model_to_json(model: FHIRAbstractModel) -> dict:
     return json.loads(model.json())
 
 def handle_error(e):
-    logging.exception("An error occurred: %s", e)
-    return jsonify({"error": str(e)}), 500
+    logging.error("An error occurred: %s", e)
+    return e.response.json()
 
 
 
