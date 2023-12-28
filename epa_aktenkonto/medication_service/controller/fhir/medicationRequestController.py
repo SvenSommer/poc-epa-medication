@@ -1,6 +1,8 @@
 from controller.fhir.epaFhirRessource import ePAFHIRRessource
 from controller.fhir.fhirHelper import FHIRHelper
 
+import logging
+
 class MedicationRequestController(ePAFHIRRessource):
     def __init__(self, db_reader, db_writer):
         self.db_reader = db_reader
@@ -23,22 +25,25 @@ class MedicationRequestController(ePAFHIRRessource):
         return self.db_writer.create_or_update_resource("MedicationRequest", medication_request_updated, unique_ressource_identifier, rx_identifier)
 
     def set_new_status(self, medication_requests, new_status):
-        medication_request_tuple = medication_requests[0]
-        if not medication_request_tuple or not isinstance(medication_request_tuple, tuple) or not medication_request_tuple[0]:
-            raise ValueError("Invalid format for MedicationRequest data")
+        logging.info("Setting new status for medication_request: %s", medication_requests)
+        for medication_request in medication_requests:
+            try:
+                logging.info("Setting new status for medication_request: %s", medication_request)
 
-        medication_request = medication_request_tuple[0]
+                if isinstance(medication_request, tuple):
+                    medication_request_data = medication_request[0]
+                else:
+                    medication_request_data = medication_request
 
-        if 'MedicationRequest' in medication_request:
-            medication_request_data = medication_request['MedicationRequest']
-            medication_request_data["status"] = new_status
-        else:
-            raise ValueError("MedicationRequest data not found in the expected format")
-        
-        # Consider updating meta.versionId and meta.lastUpdated here
-        # ...
+                medication_request_data["status"] = new_status
 
-        return medication_request
+                # Consider updating meta.versionId and meta.lastUpdated here
+                # ...
+
+            except KeyError:
+                raise ValueError("MedicationRequest data not found in the expected format")
+
+        return medication_request_data
     
     def find_medicationRequest_by_unique_ressource_identifier(self, unique_ressource_identifier):
         return self.db_reader.get_resource_by_unique_ressource_identifier("MedicationRequest", unique_ressource_identifier)

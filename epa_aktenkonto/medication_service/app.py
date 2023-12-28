@@ -99,7 +99,7 @@ def provide_prescription():
 def cancel_prescription():
     fhir_data = request.json
 
-    if not fhir_validator.validate_fhir_data(fhir_data, {"RxPrescriptionProcessIdentifier"}):
+    if not fhir_validator.validate_fhir_data(fhir_data, {"RxPrescriptionProcessIdentifier"}, "RxPrescriptionProcessIdentifier"):
         return send_response("Invalid FHIR data", 400)
 
     try:
@@ -133,7 +133,7 @@ def provide_dispensation():
 def cancel_dispensation():
     fhir_data = request.json
 
-    if not fhir_validator.validate_fhir_data(fhir_data, {"RxPrescriptionProcessIdentifier"}):
+    if not fhir_validator.validate_fhir_data(fhir_data, {"RxPrescriptionProcessIdentifier"}, "RxPrescriptionProcessIdentifier"):
         return send_response("Invalid FHIR data", 400)
 
     try:

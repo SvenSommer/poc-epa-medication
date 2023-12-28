@@ -32,6 +32,7 @@ class PrescriptionController:
     def handle_cancel_prescription(self, fhir_data):
         try:
             rx_identifier = self.fhir_helper.extract_value_identifier_by_name(fhir_data, "RxPrescriptionProcessIdentifier")
+            logging.info("Canceling prescription with rx_identifier: %s", rx_identifier)
             self.medication_request_controller.update_status(rx_identifier, "cancelled")
             self.medication_dispense_controller.update_status(rx_identifier, "cancelled")
             self.medication_controller.update_status(rx_identifier, "inactive")
