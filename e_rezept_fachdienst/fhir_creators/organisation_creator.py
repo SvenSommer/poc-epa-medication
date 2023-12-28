@@ -81,7 +81,7 @@ class OrganizationCreator:
             contact_name="Empfang Zahnarztpraxis Dr. Mustermann",
             phone="030 1234567",
         )
-    
+    @staticmethod
     def get_example_farmacy_organization():
         return OrganizationCreator.create_organization(
             org_id="OrganizationExample",
