@@ -1,5 +1,5 @@
-from e_rezept_fachdienst.fhir_creators.models.codingObject import CodingObject
-from e_rezept_fachdienst.fhir_creators.models.ingredient import Ingredient
+from fhir_creators.models.codingObject import CodingObject
+from fhir_creators.models.ingredient import Ingredient
 
 
 from typing import List, Optional

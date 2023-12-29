@@ -4,7 +4,7 @@ from fhir.resources.codeableconcept import CodeableConcept
 from fhir.resources.coding import Coding
 from fhir.resources.meta import Meta
 
-from e_rezept_fachdienst.fhir_creators.models.practitionerInfo import PractitionerInfo
+from fhir_creators.models.practitionerInfo import PractitionerInfo
 
 class PractitionerCreator:
     @staticmethod

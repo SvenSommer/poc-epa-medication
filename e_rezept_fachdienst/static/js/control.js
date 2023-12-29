@@ -1,3 +1,5 @@
+import { addPrescriptionItem } from "./prescriptionManager.js";
+
 // Function to show banner
 function showBanner(message, type) {
     let banner = `<div class="alert ${type === 'success' ? 'alert-success' : 'alert-danger'}">${message}</div>`;
@@ -9,7 +11,7 @@ function addLogEntry(action, url, requestPayload, response) {
     const timestamp = new Date().toISOString();
 
     logStorage.unshift({ timestamp, action, url, requestPayload, response });
-    
+
     if (logStorage.length > 10) {
         logStorage.pop();
     }
@@ -45,63 +47,72 @@ function updateLogDisplay() {
 
 document.getElementById('addPrescription').addEventListener('click', addPrescriptionItem);
 
-function addPrescriptionItem() {
-    const accordion = document.getElementById('prescriptionAccordion');
-    const newItem = createAccordionItem(/* pass default values or empty strings */);
-    accordion.appendChild(newItem);
-}
+// Global counter to uniquely identify each accordion item
 
-function createAccordionItem(data = {}) {
-    const item = document.createElement('div');
-    item.className = 'accordion-item';
-    item.innerHTML = `
-        <div class="accordion-header">
-            <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#collapse${data.id}">
-                ${data.summary || 'New Prescription'}
-            </button>
-            <button class="btn btn-danger remove-button">
-                <i class="fas fa-minus"></i>
-            </button>
-        </div>
-        <div id="collapse${data.id}" class="accordion-collapse collapse">
-            <div class="accordion-body">
-                <!-- Form elements to edit prescription details -->
-            </div>
-        </div>
-    `;
-
-    item.querySelector('.remove-button').addEventListener('click', () => item.remove());
-    
-    // Add event listeners or additional logic to handle prescription detail editing
-
-    return item;
-}
-
-// Initialize with one item
 addPrescriptionItem();
 
-function collectMedicationData() {
-    var medications = [];
-    document.querySelectorAll('.medication-entry').forEach(entry => {
-        var data = {
-            rxPrescriptionProcessIdentifier: entry.children[0].value.trim(),
-            medicationCode: entry.children[1].value.trim(),
-            // Collect other fields as needed
+function collectRequestData() {
+    var prescriptions = [];
+    console.log("Collecting prescription data...");
+    document.querySelectorAll('.card').forEach(item => {
+        console.log("Processing an item:", item);
+        var id = item.querySelector('.card-header button').getAttribute('data-target').replace('#collapse', '').replace('collapse', '');
+        console.log("ID:", id);
+        var rxPrescriptionProcessIdentifier = document.getElementById('rxPrescriptionProcessIdentifier' + id).value.trim();
+        var patientReference = document.getElementById('patientReference' + id).value.trim();
+        var authoredOn = document.getElementById('authoredOn' + id).value.trim();
+        var dosageInstructionText = document.getElementById('dosageInstructionText' + id).value.trim();
+        var substitutionAllowed = document.getElementById('substitutionAllowed' + id).checked;
+
+        var medicationCode =  "123" // field is set later
+        var medicationDisplay = document.getElementById('medicationDisplay' + id).value.trim();
+        var medicationSystem = document.getElementById('medicationSystem' + id).value.trim();
+
+        var formCode = document.getElementById('formCode' + id).value.trim();
+        var formDisplay = document.getElementById('formDisplay' + id).value.trim();
+        var formSystem = document.getElementById('formSystem' + id).value.trim();
+
+        var prescriptionData = {
+            rxPrescriptionProcessIdentifier: rxPrescriptionProcessIdentifier,
+            medication_request_info: {
+                medication_reference: "123", // You may need to update this field
+                rxPrescriptionProcessIdentifier: rxPrescriptionProcessIdentifier,
+                patient_reference: patientReference,
+                authoredOn: authoredOn,
+                dosage_instruction_text: dosageInstructionText,
+                substitution_allowed: substitutionAllowed
+            },
+            medication_info: {
+                rxPrescriptionProcessIdentifier: rxPrescriptionProcessIdentifier,
+                medication_coding: {
+                    code: medicationCode,
+                    display: medicationDisplay,
+                    system: medicationSystem
+                },
+                form_coding: {
+                    code: formCode,
+                    display: formDisplay,
+                    system: formSystem
+                }
+            },
         };
-        medications.push(data);
+        prescriptions.push(prescriptionData);
     });
-    return medications;
+    console.log(prescriptions);
+    return prescriptions;
 }
 
-function makeRequest(url, action) {
-    let medications = collectMedicationData();
 
-    if (medications.some(med => !med.rxPrescriptionProcessIdentifier)) {
+
+function makeRequest(url, action) {
+    let requestData = collectRequestData();
+
+    if (requestData.some(med => !med.rxPrescriptionProcessIdentifier)) {
         showBanner('Error: Invalid identifier', 'error');
         return;
     }
 
-    let requestPayload = { medications };
+    let requestPayload = { prescriptions: requestData };
 
     $.ajax({
         url: url,

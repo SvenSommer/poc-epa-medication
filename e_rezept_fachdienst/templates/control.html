@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://stackpath.bootstrapcdn.com">
+    <link rel="preconnect" href="https://code.jquery.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </head>
 
 <body>
@@ -20,60 +25,101 @@
             </ul>
         </nav>
     </main>
+
     <div id="banner"></div>
 
     <main class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <div id="prescriptionAccordion" class="accordion">
-                    <!-- Dynamic accordion items will be added here -->
-                </div>
-                
-                <button type="button" id="addPrescription" class="btn btn-success">
-                    <i class="fas fa-plus"></i>
-                </button>
-            </div>
-        </div>
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="roleTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="arztpraxis-tab" data-toggle="tab" href="#arztpraxis" role="tab" aria-controls="arztpraxis" aria-selected="true">Arztpraxis</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="apotheke-tab" data-toggle="tab" href="#apotheke" role="tab" aria-controls="apotheke" aria-selected="false">Apotheke</a>
+            </li>
+        </ul>
 
-        <div class="row">
+        <!-- Tab Content -->
+        <div class="tab-content" id="roleTabsContent">
+            <!-- Arztpraxis Tab Pane -->
+            <div class="tab-pane fade show active" id="arztpraxis" role="tabpanel" aria-labelledby="arztpraxis-tab">
+                <!-- Nested Tabs for Arztpraxis -->
+                <ul class="nav nav-tabs" id="arztpraxisTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="verschreibung-tab" data-toggle="tab" href="#verschreibung" role="tab" aria-controls="verschreibung" aria-selected="true">Verschreibungen</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="organisation-tab" data-toggle="tab" href="#organisation" role="tab" aria-controls="organisation" aria-selected="false">Organisation</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="practitioner-tab" data-toggle="tab" href="#practitioner" role="tab" aria-controls="practitioner" aria-selected="false">Arzt</a>
+                    </li>
+                </ul>
+            
+                <!-- Tab Content for Arztpraxis -->
+                <div class="tab-content" id="arztpraxisTabContent">
+                    <div class="tab-pane fade show active" id="verschreibung" role="tabpanel" aria-labelledby="verschreibung-tab">
+                        <div id="prescriptionAccordion" role="tablist" aria-multiselectable="true">
+                            <!-- Dynamic accordion items will be added here -->
+                        </div>
+                    
+                        <button type="button" id="addPrescription" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Add Prescription
+                        </button>
+                        <div></div>
+                        <!-- Send Prescription Button -->
+                        <button id="sendPrescription" class="btn custom-button custom-button-primary">Rezept Senden</button>
+                        <button id="cancelPrescription" class="btn custom-button custom-button-danger">Rezept Stornieren</button>
+                    </div>
+            
+                    <div class="tab-pane fade" id="organisation" role="tabpanel" aria-labelledby="organisation-tab">
+                        <!-- Organisation Fields -->
+                        <!-- Add your input fields for Organisation here -->
+                    </div>
+            
+                    <div class="tab-pane fade" id="practitioner" role="tabpanel" aria-labelledby="practitioner-tab">
+                        <!-- Practitioner Fields -->
+                        <!-- Add your input fields for Practitioner here -->
+                    </div>
+                </div>
+            
+            
+            </div>
            
 
-            <div class="col-md-3">
-                <h2>Arztpraxis</h2>
-                <button id="sendPrescription" class="btn custom-button custom-button-primary">Rezept Senden</button>
-                <button id="cancelPrescription" class="btn custom-button custom-button-danger">Rezept Stornieren</button>
-            </div>
-            <div class="col-md-3">
-                <h2>Patient</h2>
-            </div>
-            <div class="col-md-3">
-                <h2>Apotheke</h2>
+            <!-- Apotheke Tab Pane -->
+            <div class="tab-pane fade" id="apotheke" role="tabpanel" aria-labelledby="apotheke-tab">
+                <!-- Apotheke specific content -->
                 <button id="sendDispensation" class="btn custom-button custom-button-primary">Abgabe Senden</button>
                 <button id="cancelDispensation" class="btn custom-button custom-button-danger">Abgabe Stornieren</button>
             </div>
-            <div class="col-md-3">
-                <h2>Apotheke direkt</h2>
-            </div>
-            
         </div>
-        
+
+       
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Action</th>
+                    <th>URL</th>
+                    <th>Rx Prescription Process Identifier</th>
+                    <th>Response Message</th>
+                    <th>Response Code</th>
+                </tr>
+            </thead>
+            <tbody id="logTableBody"></tbody>
+        </table>
     </main>
-    <main class="container">
-    <table>
-        <thead>
-            <tr>
-                <th>Time</th>
-                <th>Action</th>
-                <th>URL</th>
-                <th>Rx Prescription Process Identifier</th>
-                <th>Response Message</th>
-                <th>Response Code</th>
-            </tr>
-        </thead>
-        <tbody id="logTableBody"></tbody>
-    </table>
-</main>
-    <script src="../static/control.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script type="module" src="/static/js/control.js"></script>
+
+   
+    
 </body>
+
 
 </html>

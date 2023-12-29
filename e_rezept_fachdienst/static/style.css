@@ -80,6 +80,19 @@ nav ul li a:hover {
     margin-left: 10px; /* Adjust as needed */
 }
 
+.prescription-summary {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f8f9fa; /* Light gray background */
+    border: 1px solid #dee2e6; /* Light gray border */
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+.prescription-summary strong {
+    font-weight: bold;
+}
+
 #addPrescription {
     background-color: #28a745; /* Green background */
     color: white; /* White text */
