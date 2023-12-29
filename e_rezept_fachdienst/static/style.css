@@ -64,19 +64,42 @@ nav ul li a:hover {
     font-weight: bold;
 }
 
-.accordion {
-    cursor: pointer;
-    padding: 18px;
-    width: 100%;
-    text-align: left;
-    border: none;
-    outline: none;
-    transition: 0.4s;
+
+
+.active {
+    background-color: #ccc;
 }
 
-.active,
-.accordion:hover {
-    background-color: #ccc;
+.accordion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.remove-button {
+    margin-left: 10px; /* Adjust as needed */
+}
+
+#addPrescription {
+    background-color: #28a745; /* Green background */
+    color: white; /* White text */
+    border: none; /* No border */
+    padding: 10px 15px; /* Padding around the text */
+    border-radius: 5px; /* Rounded corners */
+    font-size: 16px; /* Font size */
+    cursor: pointer; /* Cursor changes to a hand icon when hovering */
+    margin: 10px 0; /* Margin for spacing */
+    display: inline-block; /* Inline-block display */
+    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+#addPrescription:hover {
+    background-color: #218838; /* Slightly darker green on hover */
+}
+
+#addPrescription:focus {
+    outline: none; /* Removes the outline on focus for cleaner look */
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.5); /* Adds a subtle glow effect on focus */
 }
 
 .panel {

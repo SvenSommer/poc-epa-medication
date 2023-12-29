@@ -7,20 +7,13 @@ from fhir.resources.meta import Meta
 from fhir.resources.contactpoint import ContactPoint
 from fhir.resources.humanname import HumanName
 
+from fhir_creators.models.organizationInfo import OrganizationInfo
+
 class OrganizationCreator:
     @staticmethod
-    def create_organization(
-        org_id: str,
-        telematik_id: str,
-        org_type_code: str,
-        org_type_display: str,
-        name: str,
-        alias: str,
-        contact_name: str,
-        phone: str,
-    ) -> Organization:
+    def create_organization(org_info: OrganizationInfo) -> Organization:
         organization = Organization(
-            id=org_id,
+            id=org_info.org_id,
             meta=Meta(
                 profile=[
                     "https://gematik.de/fhir/directory/StructureDefinition/OrganizationDirectory"
@@ -33,21 +26,21 @@ class OrganizationCreator:
             identifier=[
                 Identifier(
                     system="https://gematik.de/fhir/sid/telematik-id",
-                    value=telematik_id,
+                    value=org_info.telematik_id,
                 )
             ],
             active=True,
-            type=[CodeableConcept(  # Geändert zu einer Liste
+            type=[CodeableConcept(
                 coding=[
                     Coding(
                         system="https://gematik.de/fhir/directory/CodeSystem/OrganizationProfessionOID",
-                        code=org_type_code,
-                        display=org_type_display
+                        code=org_info.org_type_code,
+                        display=org_info.org_type_display
                     ),
                 ]
             )],
-            name=name,
-            alias=[alias],
+            name=org_info.name,
+            alias=[org_info.alias],
             contact=[
                 {
                     "purpose": CodeableConcept(
@@ -59,9 +52,9 @@ class OrganizationCreator:
                             )
                         ]
                     ),
-                    "name": HumanName(text=contact_name),
+                    "name": HumanName(text=org_info.contact_name),
                     "telecom": [
-                        ContactPoint(system="phone", value=phone)
+                        ContactPoint(system="phone", value=org_info.phone)
                     ]
                 }
             ]
@@ -71,7 +64,7 @@ class OrganizationCreator:
 
     @staticmethod
     def get_example_dentist():
-        return OrganizationCreator.create_organization(
+        org_info = OrganizationInfo(
             org_id="OrganizationExample",
             telematik_id="2-2.58.00000040",
             org_type_code="1.2.276.0.76.4.51",
@@ -81,9 +74,11 @@ class OrganizationCreator:
             contact_name="Empfang Zahnarztpraxis Dr. Mustermann",
             phone="030 1234567",
         )
+        return OrganizationCreator.create_organization(org_info)
+    
     @staticmethod
     def get_example_farmacy_organization():
-        return OrganizationCreator.create_organization(
+        org_info = OrganizationInfo(
             org_id="OrganizationExample",
             telematik_id="2-2.58.00000040",
             org_type_code="1.2.276.1.78.6.87",
@@ -93,6 +88,7 @@ class OrganizationCreator:
             contact_name="Empfang Apotheke am Bahnhof",
             phone="030 1234567",
         )
+        return OrganizationCreator.create_organization(org_info)
     
 if __name__ == "__main__":
     import os

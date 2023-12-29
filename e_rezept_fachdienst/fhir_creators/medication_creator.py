@@ -3,19 +3,15 @@ from fhir.resources.extension import Extension
 from fhir.resources.identifier import Identifier
 from fhir.resources.codeableconcept import CodeableConcept
 from fhir.resources.meta import Meta
-from typing import List, Optional
+from fhir_creators.models.medicationInfo import MedicationInfo
 from fhir_creators.models.codingObject import CodingObject
 from fhir_creators.models.ingredient import Ingredient
 import uuid
 
 class MedicationCreator:
     @staticmethod
-    def create_medication(
-        medication_id: str,
-        rxPrescriptionProcessIdentifier: str,
-        medication_coding: CodingObject,
-        form_coding: Optional[CodingObject] = None,
-    ) -> Medication:
+    def create_medication(medication_info: MedicationInfo) -> Medication:
+        medication_id = str(uuid.uuid4())
         meta = Meta(
             profile=[
                 "https://gematik.de/fhir/epa-medication/StructureDefinition/epa-medication"
@@ -26,69 +22,54 @@ class MedicationCreator:
                 url="https://gematik.de/fhir/epa-medication/StructureDefinition/rx-prescription-process-identifier-extension",
                 valueIdentifier=Identifier(
                     system="https://gematik.de/fhir/epa-medication/sid/rx-prescription-process-identifier",
-                    value=rxPrescriptionProcessIdentifier,
+                    value=medication_info.rxPrescriptionProcessIdentifier,
                 ),
             )
         ]
         medication = Medication(id=medication_id, meta=meta, extension=extension)
-        medication.identifier = [Identifier(value=medication_id)]
-        medication.code = CodeableConcept(coding=[medication_coding.to_coding()])
-        if form_coding:
-            medication.form = CodeableConcept(coding=[form_coding.to_coding()])
+        medication.code = CodeableConcept(coding=[medication_info.medication_coding.to_coding()])
+        if medication_info.form_coding:
+            medication.form = CodeableConcept(coding=[medication_info.form_coding.to_coding()])
         medication.status = "active"
 
+        if medication_info.ingredients:
+            medication.ingredient = [ingredient.to_fhir() for ingredient in medication_info.ingredients]
+
         return medication
 
     @staticmethod
-    def create_medication_with_ingredients(
-        medication_id: str,
-        rxPrescriptionProcessIdentifier: str,
-        medication_coding: CodingObject,
-        form_coding: Optional[CodingObject],
-        ingredients: List[Ingredient]
-    ) -> Medication:
-        medication = MedicationCreator.create_medication(
-            medication_id=medication_id,
+    def get_example_medication_pzn(rxPrescriptionProcessIdentifier):
+        medication_info = MedicationInfo(
             rxPrescriptionProcessIdentifier=rxPrescriptionProcessIdentifier,
-            medication_coding=medication_coding,
-            form_coding=form_coding,
+            medication_coding=CodingObject(
+                code="08671219",
+                display="Aciclovir 800 - 1 A Pharma® 35 Tbl. N1",
+                system="http://fhir.de/CodeSystem/ifa/pzn"
+            ),
+            form_coding=CodingObject(
+                code="TAB",
+                display="Tablette",
+                system="https://fhir.kbv.de/CodeSystem/KBV_CS_SFHIR_KBV_DARREICHUNGSFORM"
+            )
         )
-        medication.ingredient = [ingredient.to_fhir() for ingredient in ingredients]
-        return medication
+        return MedicationCreator.create_medication(medication_info)
 
     @staticmethod
-    def get_example_medication(rxPrescriptionProcessIdentifier):
-        return [
-            MedicationCreator.create_medication(
-                medication_id=str(uuid.uuid4()),
-                rxPrescriptionProcessIdentifier=rxPrescriptionProcessIdentifier,
-                medication_coding=CodingObject(
-                    code="08671219",
-                    display="Aciclovir 800 - 1 A Pharma® 35 Tbl. N1",
-                    system="http://fhir.de/CodeSystem/ifa/pzn"
-                ),
-                form_coding=CodingObject(
-                    code="TAB",
-                    display="Tablette",
-                    system="https://fhir.kbv.de/CodeSystem/KBV_CS_SFHIR_KBV_DARREICHUNGSFORM"
-                )
+    def get_example_medication_ask(rxPrescriptionProcessIdentifier):
+        medication_info = MedicationInfo(
+            rxPrescriptionProcessIdentifier=rxPrescriptionProcessIdentifier,
+            medication_coding=CodingObject(
+                code="5682",
+                display="Ibuprofen",
+                system="http://fhir.de/CodeSystem/ask"
             ),
-            MedicationCreator.create_medication(
-                medication_id=str(uuid.uuid4()),
-                rxPrescriptionProcessIdentifier="456",
-                medication_coding=CodingObject(
-                    code="5682",
-                    display="Ibuprofen",
-                    system="http://fhir.de/CodeSystem/ask"
-                ),
-                form_coding=None
-            )
-        ]
-
+            form_coding=None
+        )
+        return MedicationCreator.create_medication(medication_info)
+    
     @staticmethod
     def get_example_medication_ingredient(rxPrescriptionProcessIdentifier):
-        medication_with_ingredients = MedicationCreator.create_medication_with_ingredients(
-            medication_id=str(uuid.uuid4()),
+        medication_info = MedicationInfo(
             rxPrescriptionProcessIdentifier=rxPrescriptionProcessIdentifier,
             medication_coding=CodingObject(
                 code="L01DB01",
@@ -125,7 +106,7 @@ class MedicationCreator:
                 )
             ]
         )
-        return medication_with_ingredients
+        return MedicationCreator.create_medication(medication_info)
 
 
 
