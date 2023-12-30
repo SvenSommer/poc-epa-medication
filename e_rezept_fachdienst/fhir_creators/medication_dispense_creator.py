@@ -11,7 +11,7 @@ from fhir_creators.models.medicationDispenseInfo import MedicationDispenseInfo
 
 class MedicationDispenseCreator:
     @staticmethod
-    def create_medication_dispense(dispense_info: MedicationDispenseInfo) -> MedicationDispense:
+    def create_medication_dispense(medication_dispense_info: MedicationDispenseInfo) -> MedicationDispense:
         medication_dispense = MedicationDispense(
             id=str(uuid4()),
             meta=Meta(
@@ -24,22 +24,22 @@ class MedicationDispenseCreator:
                     url="https://gematik.de/fhir/epa-medication/StructureDefinition/rx-prescription-process-identifier-extension",
                     valueIdentifier=Identifier(
                         system="https://gematik.de/fhir/epa-medication/sid/rx-prescription-process-identifier",
-                        value=dispense_info.rxPrescriptionProcessIdentifier
+                        value=medication_dispense_info.rxPrescriptionProcessIdentifier
                     )
                 )
             ],
             status="completed",
-            medicationReference=Reference(reference="urn:uuid:" + dispense_info.medication_reference),
-            subject=Reference(reference="urn:uuid:" + dispense_info.patient_identifier),
+            medicationReference=Reference(reference="urn:uuid:" + medication_dispense_info.medication_reference),
+            subject=Reference(reference="urn:uuid:" + medication_dispense_info.patient_identifier),
             performer=[
-                {"actor": Reference(reference="urn:uuid:" + dispense_info.performer_organization_reference)}
+                {"actor": Reference(reference="urn:uuid:" + medication_dispense_info.performer_organization_reference)}
             ],
             authorizingPrescription=[
-                Reference(reference="urn:uuid:" + dispense_info.authorizing_prescription_reference)
+                Reference(reference="urn:uuid:" + medication_dispense_info.authorizing_prescription_reference)
             ],
-            whenHandedOver=dispense_info.when_handed_over,
-            dosageInstruction=[{"text": dispense_info.dosage_instruction_text}],
-            substitution={"wasSubstituted": dispense_info.substitution_allowed}
+            whenHandedOver=medication_dispense_info.when_handed_over,
+            dosageInstruction=[{"text": medication_dispense_info.dosage_instruction_text}],
+            substitution={"wasSubstituted": medication_dispense_info.substitution_allowed}
         )
 
         return medication_dispense

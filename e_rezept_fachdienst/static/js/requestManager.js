@@ -2,63 +2,118 @@ import { showBanner } from "./bannerManager.js";
 import { addLogEntry } from "./logManager.js";
 
 
-function makeRequest(url, action) {
-    let requestData = collectRequestData();
+function makeRequest(url, action, requestPayload) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: url,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(requestPayload),
+            success: function (response, textStatus, xhr) {
+                addLogEntry(action, url, requestPayload, response); // Log the request and response
 
-    if (requestData.some(med => !med.rxPrescriptionProcessIdentifier)) {
-        showBanner('Error: Invalid identifier', 'error');
-        return;
-    }
-
-    let requestPayload = { prescriptions: requestData };
-
-    $.ajax({
-        url: url,
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(requestPayload),
-        success: function (response, textStatus, xhr) {
-            addLogEntry(action, url, requestPayload, response); // Log the request and response
-
-            if (response.status_code === 200) {
-                let message = response.message || action + ' successful';
-                showBanner('Success: ' + message, 'success');
-            } else {
-                let errorMessage = response.message || 'Error: ' + xhr.status;
-                showBanner("Error: '" + errorMessage + "', Status code: " + response.status_code, 'error');
+                if (response.status_code === 200) {
+                    let message = response.message || action + ' successful';
+                    showBanner('Success: ' + message, 'success');
+                    resolve(response);
+                } else {
+                    let errorMessage = response.message || 'Error: ' + xhr.status;
+                    showBanner("Error: '" + errorMessage + "', Status code: " + response.status_code, 'error');
+                    reject(new Error(errorMessage));
+                }
+            },
+            error: function (xhr) {
+                let errorMessage = 'An unknown error occurred';
+                if (xhr && xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                } else if (xhr && xhr.status) {
+                    errorMessage = 'Error: ' + xhr.status;
+                }
+                addLogEntry(action, url, requestPayload, { error: errorMessage }); // Log the error
+                showBanner('Error: ' + errorMessage, 'error');
+                reject(new Error(errorMessage));
             }
-        },
-        error: function (xhr) {
-            let errorMessage = 'An unknown error occurred';
-            if (xhr && xhr.responseJSON && xhr.responseJSON.error) {
-                errorMessage = xhr.responseJSON.error;
-            } else if (xhr && xhr.status) {
-                errorMessage = 'Error: ' + xhr.status;
-            }
-            addLogEntry(action, url, requestPayload, { error: errorMessage }); // Log the error
-            showBanner('Error: ' + errorMessage, 'error');
-        }
+        });
     });
 }
 
-function collectRequestData() {
-    // Helper function to trim and get value from an element
-    const getValue = (id) => document.getElementById(id).value.trim();
+function getValue(id, logError = false) {
+    const element = document.getElementById(id);
+    if (!element) {
+        const message = `Element with ID '${id}' not found.`;
+        logError ? console.error(message) : console.warn(message);
+        return '';
+    }
 
+    const value = element.value.trim();
+    if (value === '') {
+        const message = `Value for element with ID '${id}' is empty.`;
+        logError ? console.error(message) : console.warn(message);
+    }
+
+    return value;
+}
+
+
+function collectDispensationRequestData() {
+    const farmacyOrgInfo = {
+        org_id: "456", // Hardcoded for now, replace with dynamic value if needed
+        telematik_id: getValue('farmacyOrgTelematikId1'),
+        org_type_code: getValue('farmacyOrgTypeCode1'),
+        org_type_display: getValue('farmacyOrgTypeDisplay1'),
+        name: getValue('farmacyOrgName1'),
+        alias: getValue('farmacyOrgAlias1'),
+        contact_name: getValue('farmacyOrgContactName1'),
+        phone: getValue('farmacyOrgPhone1')
+    };
+        var dispensations = Array.from(document.querySelectorAll('.dispensation-card')).map(item => {
+        var id = item.querySelector('.dispensation-card button').getAttribute('data-target').replace(/#collapse|collapse/g, '');
+
+        return {
+            rxPrescriptionProcessIdentifier: getValue('dispensationRxPrescriptionProcessIdentifier' + id),
+            medication_dispense_info: {
+                rxPrescriptionProcessIdentifier: getValue('dispensationRxPrescriptionProcessIdentifier' + id),
+                medication_reference: "123", 
+                patient_identifier: getValue('dispensationPatientReference' + id),
+                performer_organization_reference: farmacyOrgInfo.org_id,
+                authorizing_prescription_reference: getValue('dispensationAuthorizing_prescription_reference' + id),
+                when_handed_over: getValue('dispensationWhen_handed_over' + id),
+                dosage_instruction_text: getValue('dispensationDosageInstructionText' + id),
+                substitution_allowed: document.getElementById('dispensationSubstitutionAllowed' + id).checked
+            },
+            medication_info: {
+                rxPrescriptionProcessIdentifier: getValue('dispensationRxPrescriptionProcessIdentifier' + id),
+                medication_coding: {
+                    code: getValue('dispensationMedicationCode' + id),
+                    display: getValue('dispensationMedicationDisplay' + id),
+                    system: getValue('dispensationMedicationSystem' + id)
+                },
+                form_coding: {
+                    code: getValue('dispensationFormCode' + id),
+                    display: getValue('dispensationFormDisplay' + id),
+                    system: getValue('dispensationFormSystem' + id)
+                }
+            },
+            organization_info: farmacyOrgInfo
+        };
+    });
+
+    return dispensations;
+}
+function collectPrescriptionRequestData() {
     const splitGivenNames = (givenNamesString) => {
         return givenNamesString.split(',').map(name => name.trim());
     };
 
-    // Collecting organization data
-    const organizationInfo = {
+    const doctorOrgInfo = {
         org_id: "456", // Hardcoded for now, replace with dynamic value if needed
-        telematik_id: getValue('orgTelematikId1'),
-        org_type_code: getValue('orgTypeCode1'),
-        org_type_display: getValue('orgTypeDisplay1'),
-        name: getValue('orgName1'),
-        alias: getValue('orgAlias1'),
-        contact_name: getValue('contactName1'),
-        phone: getValue('phone1')
+        telematik_id: getValue('doctorOrgTelematikId1'),
+        org_type_code: getValue('doctorOrgTypeCode1'),
+        org_type_display: getValue('doctorOrgTypeDisplay1'),
+        name: getValue('doctorOrgName1'),
+        alias: getValue('doctorOrgAlias1'),
+        contact_name: getValue('doctorOrgContactName1'),
+        phone: getValue('doctorOrgPhone1')
     };
 
     const practitionerInfo = {
@@ -80,36 +135,34 @@ function collectRequestData() {
         var id = item.querySelector('.prescription-card button').getAttribute('data-target').replace(/#collapse|collapse/g, '');
 
         return {
-            rxPrescriptionProcessIdentifier: getValue('rxPrescriptionProcessIdentifier' + id),
+            rxPrescriptionProcessIdentifier: getValue('prescriptionRxPrescriptionProcessIdentifier' + id),
             medication_request_info: {
                 medication_reference: "123", // Placeholder value
-                rxPrescriptionProcessIdentifier: getValue('rxPrescriptionProcessIdentifier' + id),
-                patient_reference: getValue('patientReference' + id),
-                authoredOn: getValue('authoredOn' + id),
-                dosage_instruction_text: getValue('dosageInstructionText' + id),
-                substitution_allowed: document.getElementById('substitutionAllowed' + id).checked
+                rxPrescriptionProcessIdentifier: getValue('prescriptionRxPrescriptionProcessIdentifier' + id),
+                patient_reference: getValue('prescriptionPatientReference' + id),
+                authoredOn: getValue('prescriptionAuthoredOn' + id),
+                dosage_instruction_text: getValue('prescriptionDosageInstructionText' + id),
+                substitution_allowed: document.getElementById('prescriptionSubstitutionAllowed' + id).checked
             },
             medication_info: {
-                rxPrescriptionProcessIdentifier: getValue('rxPrescriptionProcessIdentifier' + id),
+                rxPrescriptionProcessIdentifier: getValue('prescriptionRxPrescriptionProcessIdentifier' + id),
                 medication_coding: {
-                    code: "123", // Placeholder value
-                    display: getValue('medicationDisplay' + id),
-                    system: getValue('medicationSystem' + id)
+                    code: getValue('prescriptionMedicationCode' + id),
+                    display: getValue('prescriptionMedicationDisplay' + id),
+                    system: getValue('prescriptionMedicationSystem' + id)
                 },
                 form_coding: {
-                    code: getValue('formCode' + id),
-                    display: getValue('formDisplay' + id),
-                    system: getValue('formSystem' + id)
+                    code: getValue('prescriptionFormCode' + id),
+                    display: getValue('prescriptionFormDisplay' + id),
+                    system: getValue('prescriptionFormSystem' + id)
                 }
             },
-            organization_info: organizationInfo,
+            organization_info: doctorOrgInfo,
             practitioner_info: practitionerInfo
         };
     });
-
-    console.log(prescriptions);
     return prescriptions;
 }
 
-export { makeRequest, collectRequestData }
+export { makeRequest, collectPrescriptionRequestData, collectDispensationRequestData}
 

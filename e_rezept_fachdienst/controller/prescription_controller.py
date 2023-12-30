@@ -1,7 +1,8 @@
 from fhir.resources.parameters import Parameters, ParametersParameter
+from fhir_creators.models.prescriptionInfo import PrescriptionInfo
 import logging
 
-from fhir_creators.models.prescriptionInfo import PrescriptionInfo
+
 
 class PrescriptionController:
     def __init__(self, medication_creator, organization_creator, practitioner_creator, medication_request_creator):

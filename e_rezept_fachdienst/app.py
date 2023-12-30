@@ -11,6 +11,7 @@ from controller.prescription_controller import PrescriptionController
 from controller.dispense_controller import DispenseController
 from controller.cancel_controller import CancelController
 
+
 from fhir_creators.medication_creator import MedicationCreator
 from fhir_creators.medication_request_creator import MedicationRequestCreator
 from fhir_creators.organisation_creator import OrganizationCreator
@@ -19,9 +20,11 @@ from fhir_creators.medication_dispense_creator import MedicationDispenseCreator
 
 from fhir_creators.models.medicationInfo import MedicationInfo
 from fhir_creators.models.medicationRequestInfo import MedicationRequestInfo
+from fhir_creators.models.medicationDispenseInfo import MedicationDispenseInfo
 from fhir_creators.models.organizationInfo import OrganizationInfo
 from fhir_creators.models.practitionerInfo import PractitionerInfo
 from fhir_creators.models.prescriptionInfo import PrescriptionInfo
+from fhir_creators.models.dispensationInfo import DispensationInfo
 
 logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
@@ -79,7 +82,6 @@ def api_send_prescription():
         if not prescriptions_data:
             return jsonify({"error": "Missing prescription data"}), 400
 
-        logging.info(f"Received {len(prescriptions_data)} prescriptions")
         prescription_infos = []
         for prescription_data in prescriptions_data:
             rxPrescriptionProcessIdentifier = prescription_data.get('rxPrescriptionProcessIdentifier', '')
@@ -122,16 +124,28 @@ def api_cancel_prescription():
 @app.route('/send_dispensation', methods=['POST'])
 def api_send_dispensation():
     try:
-        medications = request.json.get('medications', [])
-        if not medications:
-            return jsonify({"error": "Missing medication data"}), 400
+        dispensations_data = request.json.get('dispensations', [])
+        if not dispensations_data:
+            return jsonify({"error": "Missing dispensation data"}), 400
 
-        identifiers = []
-        for med in medications:
-            identifiers.append(med.get('rxPrescriptionProcessIdentifier', ''))
+        dispensation_infos = []
+        for dispensation_data in dispensations_data:
+
+            rxPrescriptionProcessIdentifier = dispensation_data.get('rxPrescriptionProcessIdentifier', '')
+            medication_dispense_info = MedicationDispenseInfo(**dispensation_data['medication_dispense_info'])
+            medication_info = MedicationInfo(**dispensation_data['medication_info'])
+            organization_info = OrganizationInfo(**dispensation_data['organization_info'])
+
+            dispensation_infos.append(DispensationInfo(
+                rxPrescriptionProcessIdentifier,
+                medication_dispense_info,
+                medication_info,
+                organization_info
+            ))
+
+        params_resource = dispense_service.create_medication_dispense_params(dispensation_infos)
         
-        params_resource = dispense_service.create_medication_dispense_params(identifiers, 
-                                                        datetime.now(get_localzone()).replace(microsecond=0).isoformat())
+
         return send_fhir_request(params_resource, "provide-dispensation")
     except Exception as e:
         return handle_error(e)
