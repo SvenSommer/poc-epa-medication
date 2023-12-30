@@ -12,7 +12,6 @@
     <link rel="preconnect" href="https://code.jquery.com">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </head>
 
 <body>
@@ -73,12 +72,16 @@
                     </div>
             
                     <div class="tab-pane fade" id="organisation" role="tabpanel" aria-labelledby="organisation-tab">
-                        <!-- Organisation Fields -->
+                        <div id="organisationAccordion" role="tablist" aria-multiselectable="true">
+                            <!-- Dynamic accordion items will be added here -->
+                        </div>
                         <!-- Add your input fields for Organisation here -->
                     </div>
             
                     <div class="tab-pane fade" id="practitioner" role="tabpanel" aria-labelledby="practitioner-tab">
-                        <!-- Practitioner Fields -->
+                        <div id="practitionerAccordion" role="tablist" aria-multiselectable="true">
+                            <!-- Dynamic accordion items will be added here -->
+                        </div>
                         <!-- Add your input fields for Practitioner here -->
                     </div>
                 </div>
@@ -103,7 +106,7 @@
                     <th>Time</th>
                     <th>Action</th>
                     <th>URL</th>
-                    <th>Rx Prescription Process Identifier</th>
+                    <th>Request Payload</th>
                     <th>Response Message</th>
                     <th>Response Code</th>
                 </tr>
