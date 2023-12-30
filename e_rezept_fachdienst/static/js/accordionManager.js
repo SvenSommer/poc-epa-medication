@@ -16,7 +16,7 @@ function createSection(id, title, inputs, data) {
             </button>
         </h5>
         <div id="${id}${data.id}" class="collapse" aria-labelledby="heading${data.id}">
-            <div class="row">
+            <div class="row card-content">
                 ${inputs.map(input => createFormInput(`${input.id}${data.id}`, input.label, input.value, input.type, input.additionalClasses)).join('')}
             </div>
         </div>

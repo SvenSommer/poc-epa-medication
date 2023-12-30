@@ -73,7 +73,6 @@ nav ul li a:hover {
 .accordion-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
 }
 
 .remove-button {
@@ -93,27 +92,7 @@ nav ul li a:hover {
     font-weight: bold;
 }
 
-#addPrescription {
-    background-color: #28a745; /* Green background */
-    color: white; /* White text */
-    border: none; /* No border */
-    padding: 10px 15px; /* Padding around the text */
-    border-radius: 5px; /* Rounded corners */
-    font-size: 16px; /* Font size */
-    cursor: pointer; /* Cursor changes to a hand icon when hovering */
-    margin: 10px 0; /* Margin for spacing */
-    display: inline-block; /* Inline-block display */
-    transition: background-color 0.3s ease; /* Smooth transition for hover effect */
-}
 
-#addPrescription:hover {
-    background-color: #218838; /* Slightly darker green on hover */
-}
-
-#addPrescription:focus {
-    outline: none; /* Removes the outline on focus for cleaner look */
-    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.5); /* Adds a subtle glow effect on focus */
-}
 
 .panel {
     padding: 0 18px;
@@ -123,11 +102,8 @@ nav ul li a:hover {
 }
 
 .summary-div {
-    background-color: #f2f2f2;
     padding: 10px;
-    margin-bottom: 5px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+   
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
@@ -180,14 +156,13 @@ tr:hover {
 }
 .custom-button {
     color: #333 !important; /* Dark text color */
-    background-color: #f5f5f5 !important; /* Light whitish background color */
     border: 1px solid #ddd !important; /* Subtle border */
     padding: 14px 16px; /* Padding */
     margin: 5px 0; /* Margin */
     width: 80%; /* Full width */
     transition: all 0.3s ease; /* Smooth transition effects */
     text-align: center; /* Centering text */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Light shadow for depth */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important; /* Light shadow for depth */
 }
 
 .custom-button:hover {
@@ -197,7 +172,7 @@ tr:hover {
 
 .custom-button-primary {
     background-color: #e0f8d8; /* Primary light green color */
-    color: #333; /* Dark text color for contrast */
+    color: #1b2fdf; /* Dark text color for contrast */
 }
 
 .custom-button-danger {
@@ -211,4 +186,64 @@ tr:hover {
 
 .custom-button-danger:hover {
     background-color: #fab4b4; /* Slightly darker shade on hover for danger button */
+}
+
+.card {
+    border-radius: 0; 
+}
+
+.card-header {
+    padding: 0;
+    cursor: pointer;
+}
+
+.card-header h5 {
+    margin-bottom: 0;
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Styling .btn-link to look like an accordion header */
+.btn-link {
+    flex-grow: 1;
+    text-align: left;
+    color: #495057 !important;  /* Non-link color */
+    background-color: transparent  !important; 
+    padding: 0;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none; /* Remove underline */
+}
+
+.btn-link:hover, .btn-link:focus {
+    background-color: transparent !important; 
+    text-decoration: none !important; 
+}
+
+.btn-link.collapsed:before {
+    content: '▶';
+    font-size: 0.9rem;
+    line-height: 0;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+.btn-link:not(.collapsed):before {
+    content: '▼';
+    font-size: 0.9rem;
+    line-height: 0;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+.card-body {
+    padding: 0;
+    padding-top: -0.5rem;
+    padding-left: 1.75em !important; 
+}
+
+.card-content {
+    padding-left: 1.75rem;
+
 }
