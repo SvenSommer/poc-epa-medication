@@ -8,6 +8,8 @@ from fhir_creators.models.codingObject import CodingObject
 from fhir_creators.models.ingredient import Ingredient
 import uuid
 
+import logging
+
 class MedicationCreator:
     @staticmethod
     def create_medication(medication_info: MedicationInfo) -> Medication:
@@ -27,9 +29,12 @@ class MedicationCreator:
             )
         ]
         medication = Medication(id=medication_id, meta=meta, extension=extension)
-        medication.code = CodeableConcept(coding=[medication_info.medication_coding.to_coding()])
+        if medication_info.medication_coding: 
+            medication.code = CodingObject.create_codeable_concept_from_dict(medication_info.medication_coding)
+
         if medication_info.form_coding:
-            medication.form = CodeableConcept(coding=[medication_info.form_coding.to_coding()])
+            medication.form = CodingObject.create_codeable_concept_from_dict(medication_info.form_coding)
+
         medication.status = "active"
 
         if medication_info.ingredients:

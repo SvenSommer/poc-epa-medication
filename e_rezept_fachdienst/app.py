@@ -79,6 +79,7 @@ def api_send_prescription():
         if not prescriptions_data:
             return jsonify({"error": "Missing prescription data"}), 400
 
+        logging.info(f"Received {len(prescriptions_data)} prescriptions")
         prescription_infos = []
         for prescription_data in prescriptions_data:
             rxPrescriptionProcessIdentifier = prescription_data.get('rxPrescriptionProcessIdentifier', '')
