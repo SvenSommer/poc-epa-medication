@@ -19,196 +19,89 @@ const IdentifierUtils = {
         return this.generateBaseIdentifier() + DateTimeUtils.getCurrentDateFormatted();
     }
 };
+
+
+function getElementValue(id, isCheckbox = false) {
+    const element = document.getElementById(id);
+    if (!element) {
+        console.warn(`Element with ID '${id}' not found.`);
+        return isCheckbox ? false : '';
+    }
+    return isCheckbox ? element.checked : element.value.trim();
+}
+
+function createDefaultData(dataPurpose, prefixType, status, identifier = IdentifierUtils.generatePrescriptionIdentifier()) {
+    const currentDateTime = DateTimeUtils.getCurrentDateTimeFormatted();
+    const sectionTitle = prefixType.charAt(0).toUpperCase() + prefixType.slice(1) + ' Details';
+    const idPrefix = prefixType + 'RxPrescriptionProcessIdentifier';
+
+    return {
+        purpose: dataPurpose,
+        status: status,
+        rxPrescriptionProcessIdentifier: identifier,
+        purposeDetails: {
+            sectionTitle: sectionTitle,
+            summaryOrder: [idPrefix, prefixType + 'DosageInstructionText'],
+            inputs: createPurposeDetailsInputs(prefixType, identifier, currentDateTime)
+        },
+        medicationDetails: createMedicationDetails(prefixType),
+        formDetails: createFormDetails(prefixType)
+    };
+}
+
 function getDispenseDefaultData() {
-    const dispenseIdentifier = IdentifierUtils.generateBaseIdentifier();
-    const currentDateTime = DateTimeUtils.getCurrentDateTimeFormatted();
 
-    return {
-        purpose: 'dispensation',
-        status: 'draft',
-        rxPrescriptionProcessIdentifier: dispenseIdentifier, 
-        purposeDetails: {
-            sectionTitle: 'Dispensation Details',
-            summaryOrder: ['dispensationRxPrescriptionProcessIdentifier', 'dispensationDosageInstructionText'],
-            inputs: [
-                { id: 'dispensationRxPrescriptionProcessIdentifier', label: 'Rx Prescription Process Identifier', value: dispenseIdentifier },
-                { id: 'dispensationPatientReference', label: 'Patient Reference', value: '789' },
-                { id: 'dispensationAuthorizing_prescription_reference', label: 'Authorizing Prescription Reference', value: '123' },
-                { id: 'dispensationWhen_handed_over', label: 'When Handed Over', value: currentDateTime },
-                { id: 'dispensationDosageInstructionText', label: 'Dosage Instruction Text', value: '1-0-1' },
-                { id: 'dispensationSubstitutionAllowed', label: 'Substitution Allowed', value: true, type: 'checkbox' }
-            ]
-        },
-        medicationDetails: {
-            sectionTitle: 'Medication Details',
-            summaryOrder: ['dispensationMedicationCode', 'dispensationMedicationDisplay', 'dispensationFormDisplay'],
-            inputs: [
-                { id: 'dispensationMedicationCode', label: 'Code', value: '08671219' },
-                { id: 'dispensationMedicationDisplay', label: 'Display', value: 'Aciclovir 800 - 1 A Pharma® 35 Tbl. N1' },
-                { id: 'dispensationMedicationSystem', label: 'System', value: 'http://fhir.de/CodeSystem/ifa/pzn' }
-            ]
-        },
-        formDetails: {
-            sectionTitle: 'Form Details',
-            summaryOrder: ['dispensationFormCode', 'dispensationFormDisplay'],
-            inputs: [
-                { id: 'dispensationFormCode', label: 'Code', value: 'TAB' },
-                { id: 'dispensationFormDisplay', label: 'Display', value: 'Tablette' },
-                { id: 'dispensationFormSystem', label: 'System', value: 'https://fhir.kbv.de/CodeSystem/KBV_CS_SFHIR_KBV_DARREICHUNGSFORM' }
-            ]
-        }
-    };
+    return createDefaultData('dispensation', 'dispensation', 'draft');
 }
+
 function getPrescriptionDefaultData() {
-    const prescriptionIdentifier = IdentifierUtils.generatePrescriptionIdentifier();
-    const currentDateTime = DateTimeUtils.getCurrentDateTimeFormatted();
 
-    return {
-        purpose: 'prescription',
-        status: 'draft',
-        rxPrescriptionProcessIdentifier: prescriptionIdentifier, 
-        purposeDetails: {
-            sectionTitle: 'Prescription Details',
-            summaryOrder: ['prescriptionRxPrescriptionProcessIdentifier', 'prescriptionDosageInstructionText'],
-            inputs: [
-                { id: 'prescriptionRxPrescriptionProcessIdentifier', label: 'Rx Prescription Process Identifier', value: prescriptionIdentifier },
-                { id: 'prescriptionPatientReference', label: 'Patient Reference', value: '789' },
-                { id: 'prescriptionAuthoredOn', label: 'Authored On', value: currentDateTime },
-                { id: 'prescriptionDosageInstructionText', label: 'Dosage Instruction Text', value: '1-0-1' },
-                { id: 'prescriptionSubstitutionAllowed', label: 'Substitution Allowed', value: true, type: 'checkbox' }
-            ],
-        },
-        medicationDetails: {
-            sectionTitle: 'Medication Details',
-            summaryOrder: ['prescriptionMedicationCode', 'prescriptionMedicationDisplay', 'prescriptionFormDisplay'],
-            inputs: [
-                { id: 'prescriptionMedicationCode', label: 'Code', value: '08671219' },
-                { id: 'prescriptionMedicationDisplay', label: 'Display', value: 'Aciclovir 800 - 1 A Pharma® 35 Tbl. N1' },
-                { id: 'prescriptionMedicationSystem', label: 'System', value: 'http://fhir.de/CodeSystem/ifa/pzn' }
-            ]
-        },
-        formDetails: {
-            sectionTitle: 'Form Details',
-            summaryOrder: ['prescriptionFormCode', 'prescriptionFormDisplay'],
-            inputs: [
-                { id: 'prescriptionFormCode', label: 'Code', value: 'TAB' },
-                { id: 'prescriptionFormDisplay', label: 'Display', value: 'Tablette' },
-                { id: 'prescriptionFormSystem', label: 'System', value: 'https://fhir.kbv.de/CodeSystem/KBV_CS_SFHIR_KBV_DARREICHUNGSFORM' }
-            ]
-        }
-    };
+    return createDefaultData('prescription', 'prescription', 'draft');
 }
-
-function getValue(id, logError = false) {
-    const element = document.getElementById(id);
-    if (!element) {
-        const message = `Element with ID '${id}' not found.`;
-        logError ? console.error(message) : console.warn(message);
-        return '';
-    }
-
-    const value = element.value.trim();
-    if (value === '') {
-        const message = `Value for element with ID '${id}' is empty.`;
-        logError ? console.error(message) : console.warn(message);
-    }
-
-    return value;
-}
-
-function getCheckedValue(id) {
-    const element = document.getElementById(id);
-    if (!element) {
-        const message = `Element with ID '${id}' not found.`;
-        logError ? console.error(message) : console.warn(message);
-        return '';
-    }
-    return element.checked || false;
-}
-
 
 function gatherSentPrescriptionFromInputFields() {
-    var prescriptions = Array.from(document.querySelectorAll('.prescription-card')).map(item => {
-        var id = item.querySelector('.prescription-card button').getAttribute('data-target').replace(/#prescriptioncollapse|prescriptioncollapse/g, '');
-
-        let prescription = {
-            purpose: 'sentPrescription',
-            status: 'sent',
-            rxPrescriptionProcessIdentifier: getValue('prescriptionRxPrescriptionProcessIdentifier' + id),
-            purposeDetails: {
-                sectionTitle: 'Prescription Details',
-                summaryOrder: ['prescriptionRxPrescriptionProcessIdentifier', 'prescriptionDosageInstructionText'],
-                inputs: [
-                    { id: 'prescriptionRxPrescriptionProcessIdentifier', label: 'Rx Prescription Process Identifier', value: getValue('prescriptionRxPrescriptionProcessIdentifier' + id) },
-                    { id: 'prescriptionPatientReference', label: 'Patient Reference', value: getValue('prescriptionPatientReference' + id) },
-                    { id: 'prescriptionAuthoredOn', label: 'Authored On', value: getValue('prescriptionAuthoredOn' + id) },
-                    { id: 'prescriptionDosageInstructionText', label: 'Dosage Instruction Text', value: getValue('prescriptionDosageInstructionText' + id) },
-                    { id: 'prescriptionSubstitutionAllowed', label: 'Substitution Allowed', value: getCheckedValue('prescriptionSubstitutionAllowed' + id), type: 'checkbox' }
-                ],
-            },
-            medicationDetails: {
-                sectionTitle: 'Medication Details',
-                summaryOrder: ['prescriptionMedicationCode', 'prescriptionMedicationDisplay', 'prescriptionFormDisplay'],
-                inputs: [
-                    { id: 'prescriptionMedicationCode', label: 'Code', value: getValue('prescriptionMedicationCode' + id) },
-                    { id: 'prescriptionMedicationDisplay', label: 'Display', value: getValue('prescriptionMedicationDisplay' + id) },
-                    { id: 'prescriptionMedicationSystem', label: 'System', value: getValue('prescriptionMedicationSystem' + id) }
-                ]
-            },
-            formDetails: {
-                sectionTitle: 'Form Details',
-                summaryOrder: ['prescriptionFormCode', 'prescriptionFormDisplay'],
-                inputs: [
-                    { id: 'prescriptionFormCode', label: 'Code', value: getValue('prescriptionFormCode' + id) },
-                    { id: 'prescriptionFormDisplay', label: 'Display', value: getValue('prescriptionFormDisplay' + id) },
-                    { id: 'prescriptionFormSystem', label: 'System', value: getValue('prescriptionFormSystem' + id) }
-                ]
-            }
-        };
-
-        item.remove();
-        return prescription;
-    });
-    return prescriptions;
+    let data = gatherDataFromInputFields('prescription-card', 'sentPrescription', 'sent', 'prescription', /#prescriptioncollapse|prescriptioncollapse/g, true);
+    console.log("gatherSentPrescriptionFromInputFields:", data);
+    return data;
 }
 
 function gatherDispensationFromPrescriptionInputFields() {
     var dispensations = Array.from(document.querySelectorAll('.prescription-card')).map(item => {
-        var id = item.querySelector('.prescription-card button').getAttribute('data-target').replace(/#prescriptioncollapse|prescriptioncollapse/g, '');
+        var id = item.querySelector('.prescription-card button').getAttribute('data-target').replace(/#prescriptioncollapse|prescriptioncollapse/g, '', '');
         const currentDateTime = DateTimeUtils.getCurrentDateTimeFormatted();
 
         let dispensation = {
             purpose: 'dispensation',
             status: 'draft',
-            rxPrescriptionProcessIdentifier: getValue('prescriptionRxPrescriptionProcessIdentifier' + id), 
+            rxPrescriptionProcessIdentifier: getElementValue('prescriptionRxPrescriptionProcessIdentifier' + id), 
             purposeDetails: {
                 sectionTitle: 'Dispensation Details',
                 summaryOrder: ['dispensationRxPrescriptionProcessIdentifier', 'dispensationDosageInstructionText'],
                 inputs: [
-                    { id: 'dispensationRxPrescriptionProcessIdentifier', label: 'Rx Prescription Process Identifier', value: getValue('prescriptionRxPrescriptionProcessIdentifier' + id) },
+                    { id: 'dispensationRxPrescriptionProcessIdentifier', label: 'Rx Prescription Process Identifier', value: getElementValue('prescriptionRxPrescriptionProcessIdentifier' + id) },
                     { id: 'dispensationPatientReference', label: 'Patient Reference', value: '789' },
                     { id: 'dispensationAuthorizing_prescription_reference', label: 'Authorizing Prescription Reference', value: '123' },
                     { id: 'dispensationWhen_handed_over', label: 'When Handed Over', value: currentDateTime },
-                    { id: 'dispensationDosageInstructionText', label: 'Dosage Instruction Text', value: getValue('prescriptionDosageInstructionText' + id) },
-                    { id: 'dispensationSubstitutionAllowed', label: 'Substitution Allowed', value: getCheckedValue('prescriptionSubstitutionAllowed' + id), type: 'checkbox' }
+                    { id: 'dispensationDosageInstructionText', label: 'Dosage Instruction Text', value: getElementValue('prescriptionDosageInstructionText' + id) },
+                    { id: 'dispensationSubstitutionAllowed', label: 'Substitution Allowed', value: getElementValue('prescriptionSubstitutionAllowed' + id, true) }
                 ]
             },
             medicationDetails: {
                 sectionTitle: 'Medication Details',
                 summaryOrder: ['dispensationMedicationCode', 'dispensationMedicationDisplay'],
                 inputs: [
-                    { id: 'dispensationMedicationCode', label: 'Code', value: getValue('prescriptionMedicationCode' + id) },
-                    { id: 'dispensationMedicationDisplay', label: 'Display', value: getValue('prescriptionMedicationDisplay' + id) },
-                    { id: 'dispensationMedicationSystem', label: 'System', value: getValue('prescriptionMedicationSystem' + id) }
+                    { id: 'dispensationMedicationCode', label: 'Code', value: getElementValue('prescriptionMedicationCode' + id) },
+                    { id: 'dispensationMedicationDisplay', label: 'Display', value: getElementValue('prescriptionMedicationDisplay' + id) },
+                    { id: 'dispensationMedicationSystem', label: 'System', value: getElementValue('prescriptionMedicationSystem' + id) }
                 ]
             },
             formDetails: {
                 sectionTitle: 'Form Details',
                 summaryOrder: ['dispensationFormCode', 'dispensationFormDisplay'],
                 inputs: [
-                    { id: 'dispensationFormCode', label: 'Code', value: getValue('prescriptionFormCode' + id) },
-                    { id: 'dispensationFormDisplay', label: 'Display', value: getValue('prescriptionFormDisplay' + id) },
-                    { id: 'dispensationFormSystem', label: 'System', value: getValue('prescriptionFormSystem' + id) }
+                    { id: 'dispensationFormCode', label: 'Code', value: getElementValue('prescriptionFormCode' + id) },
+                    { id: 'dispensationFormDisplay', label: 'Display', value: getElementValue('prescriptionFormDisplay' + id) },
+                    { id: 'dispensationFormSystem', label: 'System', value: getElementValue('prescriptionFormSystem' + id) }
                 ]
             }
         };
@@ -218,51 +111,97 @@ function gatherDispensationFromPrescriptionInputFields() {
     });
     return dispensations;
 }
+
 
 function gatherDispensationFromDispensationInputFields() {
-    let dispensations = Array.from(document.querySelectorAll('.dispensation-card')).map(item => {
-        var id = item.querySelector('.dispensation-card button').getAttribute('data-target').replace(/#dispensationcollapse|dispensationcollapse/g, '');
-
-        let dispensation = {
-            purpose: 'sentDispensation',
-            status: 'sent',
-            rxPrescriptionProcessIdentifier: getValue('dispensationRxPrescriptionProcessIdentifier' + id), 
-            purposeDetails: {
-                sectionTitle: 'Dispensation Details',
-                summaryOrder: ['dispensationRxPrescriptionProcessIdentifier', 'dispensationDosageInstructionText'],
-                inputs: [
-                    { id: 'dispensationRxPrescriptionProcessIdentifier', label: 'Rx Prescription Process Identifier', value: getValue('dispensationRxPrescriptionProcessIdentifier' + id) },
-                    { id: 'dispensationPatientReference', label: 'Patient Reference', value: getValue('dispensationPatientReference' + id) },
-                    { id: 'dispensationAuthorizing_prescription_reference', label: 'Authorizing Prescription Reference', value: getValue('dispensationAuthorizing_prescription_reference' + id) },
-                    { id: 'dispensationWhen_handed_over', label: 'When Handed Over', value: getValue('dispensationWhen_handed_over' + id) },
-                    { id: 'dispensationDosageInstructionText', label: 'Dosage Instruction Text', value: getValue('dispensationDosageInstructionText' + id) },
-                    { id: 'dispensationSubstitutionAllowed', label: 'Substitution Allowed', value: getCheckedValue('dispensationSubstitutionAllowed' + id), type: 'checkbox' }
-                ]
-            },
-            medicationDetails: {
-                sectionTitle: 'Medication Details',
-                summaryOrder: ['dispensationMedicationCode', 'dispensationMedicationDisplay'],
-                inputs: [
-                    { id: 'dispensationMedicationCode', label: 'Code', value: getValue('dispensationMedicationCode' + id) },
-                    { id: 'dispensationMedicationDisplay', label: 'Display', value: getValue('dispensationMedicationDisplay' + id) },
-                    { id: 'dispensationMedicationSystem', label: 'System', value: getValue('dispensationMedicationSystem' + id) }
-                ]
-            },
-            formDetails: {
-                sectionTitle: 'Form Details',
-                summaryOrder: ['dispensationFormCode', 'dispensationFormDisplay'],
-                inputs: [
-                    { id: 'dispensationFormCode', label: 'Code', value: getValue('dispensationFormCode' + id) },
-                    { id: 'dispensationFormDisplay', label: 'Display', value: getValue('dispensationFormDisplay' + id) },
-                    { id: 'dispensationFormSystem', label: 'System', value: getValue('dispensationFormSystem' + id) }
-                ]
-            }
-        };
-        item.remove();
-        return dispensation;
-    });
-    return dispensations;
+    let data = gatherDataFromInputFields('dispensation-card', 'sentDispensation', 'sent', 'dispensation', /#dispensationcollapse|dispensationcollapse/g, true);
+    console.log("gatherDispensationFromDispensationInputFields:", data);
+    return data;
 }
+
+function gatherDataFromInputFields(cardClass, dataPurpose, status, prefixType, regex, deleteItem = false) {
+    return Array.from(document.querySelectorAll('.' + cardClass)).map(item => {
+        const idSuffix = item.querySelector('.' + cardClass + ' button').getAttribute('data-target').replace(regex, '');
+        const data = createDefaultData(dataPurpose, prefixType, status, getElementValue(prefixType + 'RxPrescriptionProcessIdentifier' + idSuffix));
+
+        // Update purpose details
+        data.purposeDetails.inputs.forEach(input => {
+            input.value = getElementValue(input.id + idSuffix, input.type === 'checkbox');
+        });
+
+        // Update medication details
+        data.medicationDetails.inputs.forEach(input => {
+            input.value = getElementValue(input.id + idSuffix);
+        });
+
+        // Update form details
+        data.formDetails.inputs.forEach(input => {
+            input.value = getElementValue(input.id + idSuffix);
+        });
+
+        if (deleteItem) {
+            item.remove();
+        }
+
+        return data;
+    });
+}
+
+function createPurposeDetailsInputs(type, identifier, currentDateTime) {
+    let inputs = [
+        { id: `${type}RxPrescriptionProcessIdentifier`, label: 'Rx Prescription Process Identifier', value: identifier },
+        { id: `${type}DosageInstructionText`, label: 'Dosage Instruction Text', value: '1-0-1' }
+    ];
+
+    if (type === 'dispensation') {
+        inputs = inputs.concat([
+            { id: 'dispensationPatientReference', label: 'Patient Reference', value: '789' },
+            { id: 'dispensationAuthorizing_prescription_reference', label: 'Authorizing Prescription Reference', value: '123' },
+            { id: 'dispensationWhen_handed_over', label: 'When Handed Over', value: currentDateTime },
+            { id: 'dispensationSubstitutionAllowed', label: 'Substitution Allowed', value: true, type: 'checkbox' }
+        ]);
+    } else if (type === 'prescription') {
+        inputs = inputs.concat([
+            { id: 'prescriptionPatientReference', label: 'Patient Reference', value: '789' },
+            { id: 'prescriptionAuthoredOn', label: 'Authored On', value: currentDateTime },
+            { id: 'prescriptionSubstitutionAllowed', label: 'Substitution Allowed', value: true, type: 'checkbox' }
+        ]);
+    }
+
+    return inputs;
+}
+
+function createMedicationDetails(type) {
+    const idPrefix = type + 'Medication';
+    return {
+        sectionTitle: 'Medication Details',
+        summaryOrder: [idPrefix + 'Code', idPrefix + 'Display', idPrefix + 'FormDisplay'],
+        inputs: [
+            { id: idPrefix + 'Code', label: 'Code', value: '08671219' },
+            { id: idPrefix + 'Display', label: 'Display', value: 'Aciclovir 800 - 1 A Pharma® 35 Tbl. N1' },
+            { id: idPrefix + 'System', label: 'System', value: 'http://fhir.de/CodeSystem/ifa/pzn' }
+        ]
+    };
+}
+
+function createFormDetails(type) {
+    const idPrefix = type + 'Form';
+    return {
+        sectionTitle: 'Form Details',
+        summaryOrder: [idPrefix + 'Code', idPrefix + 'Display'],
+        inputs: [
+            { id: idPrefix + 'Code', label: 'Code', value: 'TAB' },
+            { id: idPrefix + 'Display', label: 'Display', value: 'Tablette' },
+            { id: idPrefix + 'System', label: 'System', value: 'https://fhir.kbv.de/CodeSystem/KBV_CS_SFHIR_KBV_DARREICHUNGSFORM' }
+        ]
+    };
+}
+
+
+
+
+
+
 
 
 

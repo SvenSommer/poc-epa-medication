@@ -67,8 +67,9 @@ function collectDispensationRequestData() {
         phone: getValue('farmacyOrgPhone1')
     };
     var dispensations = Array.from(document.querySelectorAll('.dispensation-card')).map(item => {
+        console.log("item:", item);
         var id = item.querySelector('.dispensation-card button').getAttribute('data-target').replace(/#dispensationcollapse|dispensationcollapse/g, '');
-
+        console.log("id:", id);
         return {
             rxPrescriptionProcessIdentifier: getValue('dispensationRxPrescriptionProcessIdentifier' + id),
             medication_dispense_info: {

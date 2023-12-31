@@ -43,7 +43,7 @@ function createAccordionItem(data = {}) {
         </div>
 
         <!-- Accordion Body -->
-        <div id="${data.purpose}collapse${data.id}" class="collapse" role="tabpanel" aria-labelledby="heading${data.id}" data-parent="#prescriptionAccordion">
+        <div id="${data.purpose}collapse${data.id}" class="collapse" role="tabpanel" aria-labelledby="heading${data.id}" data-parent="#${data.purpose}Accordion">
             <div class="card-body">
                 <!-- Prescription Details Section -->
                 ${getPrescriptionDetailsSection(data)}
