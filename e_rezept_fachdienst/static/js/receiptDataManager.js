@@ -1,24 +1,27 @@
 
-const DateTimeUtils = {
-    getCurrentDateTimeFormatted() {
+class DateTimeUtils {
+    static getCurrentDateTimeFormatted() {
         const now = new Date();
         return now.toISOString().slice(0, 19).replace('T', ' '); // YYYY-MM-DD HH:MM:SS
-    },
-    getCurrentDateFormatted() {
+    }
+
+    static getCurrentDateFormatted() {
         const now = new Date();
         return now.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
     }
-};
-const IdentifierUtils = {
-    generateBaseIdentifier() {
+}
+
+class IdentifierUtils {
+    static generateBaseIdentifier() {
         const prefix = "160.";
-        const segments = new Array(4).fill(null).map(() => Math.floor(Math.random() * 900 + 100));
+        const segments = Array.from({ length: 4 }, () => Math.floor(Math.random() * 900 + 100));
         return prefix + segments.join('.') + '_';
-    },
-    generatePrescriptionIdentifier() {
+    }
+
+    static generatePrescriptionIdentifier() {
         return this.generateBaseIdentifier() + DateTimeUtils.getCurrentDateFormatted();
     }
-};
+}
 
 
 function getElementValue(id, isCheckbox = false) {
@@ -32,8 +35,8 @@ function getElementValue(id, isCheckbox = false) {
 
 function createDefaultData(dataPurpose, prefixType, status, identifier = IdentifierUtils.generatePrescriptionIdentifier()) {
     const currentDateTime = DateTimeUtils.getCurrentDateTimeFormatted();
-    const sectionTitle = prefixType.charAt(0).toUpperCase() + prefixType.slice(1) + ' Details';
-    const idPrefix = prefixType + 'RxPrescriptionProcessIdentifier';
+    const sectionTitle = `${prefixType.charAt(0).toUpperCase()}${prefixType.slice(1)} Details`;
+    const idPrefix = `${prefixType}RxPrescriptionProcessIdentifier`;
 
     return {
         purpose: dataPurpose,
@@ -41,7 +44,7 @@ function createDefaultData(dataPurpose, prefixType, status, identifier = Identif
         rxPrescriptionProcessIdentifier: identifier,
         purposeDetails: {
             sectionTitle: sectionTitle,
-            summaryOrder: [idPrefix, prefixType + 'DosageInstructionText'],
+            summaryOrder: [idPrefix, `${prefixType}DosageInstructionText`],
             inputs: createPurposeDetailsInputs(prefixType, identifier, currentDateTime)
         },
         medicationDetails: createMedicationDetails(prefixType),
@@ -196,14 +199,6 @@ function createFormDetails(type) {
         ]
     };
 }
-
-
-
-
-
-
-
-
 
 
 export { getDispenseDefaultData, getPrescriptionDefaultData, gatherSentPrescriptionFromInputFields, gatherDispensationFromPrescriptionInputFields, gatherDispensationFromDispensationInputFields }
