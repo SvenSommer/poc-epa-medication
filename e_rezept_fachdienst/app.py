@@ -44,7 +44,9 @@ def send_fhir_request(params_resource, operation):
         raise
 
     logging.info(f"Response from {endpoint}: {response.json()}")
-    return response.json()
+    response_json = response.json()
+    response_json['fhir_request_payload'] = fhir_data
+    return  response_json
 
 
 def fhir_model_to_json(model: FHIRAbstractModel) -> dict:
@@ -107,19 +109,26 @@ def api_send_prescription():
 @app.route('/cancel_prescription', methods=['POST'])
 def api_cancel_prescription():
     try:
-        medications = request.json.get('medications', [])
-        if not medications:
-            return jsonify({"error": "Missing medication data"}), 400
+        prescriptionIdentifiers = request.json.get('prescriptionIdentifiers', [])
+
+        if not prescriptionIdentifiers:
+            logging.error("Missing Identification data")
+            return jsonify({"error": "Missing Identification data"}), 400
 
         identifiers = []
-        for med in medications:
-            identifiers.append(med.get('rxPrescriptionProcessIdentifier', ''))
-
+        for identifier in prescriptionIdentifiers:
+            if isinstance(identifier, dict) and 'rxPrescriptionProcessIdentifier' in identifier:
+                identifiers.append(identifier['rxPrescriptionProcessIdentifier'])
+            else:
+                logging.error("Invalid data format")
+                logging.info(request.json)
+                return jsonify({"error": "Invalid data format"}), 400
 
         params_resource = cancel_service.create_cancel_resources_params(identifiers)
         return send_fhir_request(params_resource, "cancel-prescription")
     except Exception as e:
         return handle_error(e)
+
 
 @app.route('/send_dispensation', methods=['POST'])
 def api_send_dispensation():
@@ -153,13 +162,20 @@ def api_send_dispensation():
 @app.route('/cancel_dispensation', methods=['POST'])
 def api_cancel_dispensation():
     try:
-        medications = request.json.get('medications', [])
-        if not medications:
-            return jsonify({"error": "Missing medication data"}), 400
+        dispensationIdentifiers = request.json.get('dispensationIdentifiers', [])
+
+        if not dispensationIdentifiers:
+            logging.error("Missing Identification data")
+            return jsonify({"error": "Missing Identification data"}), 400
 
         identifiers = []
-        for med in medications:
-            identifiers.append(med.get('rxPrescriptionProcessIdentifier', ''))
+        for identifier in dispensationIdentifiers:
+            if isinstance(identifier, dict) and 'rxPrescriptionProcessIdentifier' in identifier:
+                identifiers.append(identifier['rxPrescriptionProcessIdentifier'])
+            else:
+                logging.error("Invalid data format")
+                logging.info(request.json)
+                return jsonify({"error": "Invalid data format"}), 400
 
         params_resource = cancel_service.create_cancel_resources_params(identifiers)
         return send_fhir_request(params_resource, "cancel-dispensation")

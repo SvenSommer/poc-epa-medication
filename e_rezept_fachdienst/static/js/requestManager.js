@@ -10,7 +10,7 @@ function makeRequest(url, action, requestPayload) {
             contentType: 'application/json',
             data: JSON.stringify(requestPayload),
             success: function (response, textStatus, xhr) {
-                addLogEntry(action, url, requestPayload, response); // Log the request and response
+                addLogEntry(action, url, response.fhir_request_payload, response); 
 
                 if (response.status_code === 200) {
                     let message = response.message || action + ' successful';
@@ -29,7 +29,7 @@ function makeRequest(url, action, requestPayload) {
                 } else if (xhr && xhr.status) {
                     errorMessage = 'Error: ' + xhr.status;
                 }
-                addLogEntry(action, url, requestPayload, { error: errorMessage }); // Log the error
+                addLogEntry(action, url, requestPayload, { error: errorMessage }); 
                 showBanner('Error: ' + errorMessage, 'error');
                 reject(new Error(errorMessage));
             }
@@ -66,14 +66,14 @@ function collectDispensationRequestData() {
         contact_name: getValue('farmacyOrgContactName1'),
         phone: getValue('farmacyOrgPhone1')
     };
-        var dispensations = Array.from(document.querySelectorAll('.dispensation-card')).map(item => {
-        var id = item.querySelector('.dispensation-card button').getAttribute('data-target').replace(/#collapse|collapse/g, '');
+    var dispensations = Array.from(document.querySelectorAll('.dispensation-card')).map(item => {
+        var id = item.querySelector('.dispensation-card button').getAttribute('data-target').replace(/#dispensationcollapse|dispensationcollapse/g, '');
 
         return {
             rxPrescriptionProcessIdentifier: getValue('dispensationRxPrescriptionProcessIdentifier' + id),
             medication_dispense_info: {
                 rxPrescriptionProcessIdentifier: getValue('dispensationRxPrescriptionProcessIdentifier' + id),
-                medication_reference: "123", 
+                medication_reference: "123",
                 patient_identifier: getValue('dispensationPatientReference' + id),
                 performer_organization_reference: farmacyOrgInfo.org_id,
                 authorizing_prescription_reference: getValue('dispensationAuthorizing_prescription_reference' + id),
@@ -119,22 +119,21 @@ function collectPrescriptionRequestData() {
     const practitionerInfo = {
         id_value: "789", // Hardcoded for now, replace with dynamic value if needed
         telematik_id: getValue('practTelematikId1'),
-        anr: getValue('practAnr1'), 
-        name_text:getValue('practNameText1'),
-        family: getValue('practFamily1'), 
-        given: splitGivenNames(getValue('practGiven1')),  
+        anr: getValue('practAnr1'),
+        name_text: getValue('practNameText1'),
+        family: getValue('practFamily1'),
+        given: splitGivenNames(getValue('practGiven1')),
         prefix: getValue('practPrefix1'),
         qualifications: [
-            {"system": "https://gematik.de/fhir/directory/CodeSystem/PractitionerProfessionOID", "code": "1.2.276.0.76.4.31"},
-            {"system": "urn:oid:1.2.276.0.76.5.514", "code": "010", "display": "FA Allgemeinmedizin"},
-            {"system": "urn:oid:1.2.276.0.76.5.514", "code": "523", "display": "FA Innere Medizin und (SP) Gastroenterologie"}
+            { "system": "https://gematik.de/fhir/directory/CodeSystem/PractitionerProfessionOID", "code": "1.2.276.0.76.4.31" },
+            { "system": "urn:oid:1.2.276.0.76.5.514", "code": "010", "display": "FA Allgemeinmedizin" },
+            { "system": "urn:oid:1.2.276.0.76.5.514", "code": "523", "display": "FA Innere Medizin und (SP) Gastroenterologie" }
         ]
     };
 
-        var prescriptions = Array.from(document.querySelectorAll('.prescription-card')).map(item => {
-        var id = item.querySelector('.prescription-card button').getAttribute('data-target').replace(/#collapse|collapse/g, '');
-
-        return {
+    var prescriptions = Array.from(document.querySelectorAll('.prescription-card')).map(item => {
+        var id = item.querySelector('.prescription-card button').getAttribute('data-target').replace(/#prescriptioncollapse|prescriptioncollapse/g, '');
+        let prescription = {
             rxPrescriptionProcessIdentifier: getValue('prescriptionRxPrescriptionProcessIdentifier' + id),
             medication_request_info: {
                 medication_reference: "123", // Placeholder value
@@ -160,9 +159,10 @@ function collectPrescriptionRequestData() {
             organization_info: doctorOrgInfo,
             practitioner_info: practitionerInfo
         };
+        return prescription;
     });
     return prescriptions;
 }
 
-export { makeRequest, collectPrescriptionRequestData, collectDispensationRequestData}
+export { makeRequest, collectPrescriptionRequestData, collectDispensationRequestData }
 

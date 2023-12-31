@@ -21,7 +21,7 @@ function updateLogDisplay() {
         let rowClass = isSuccess ? ' class="success-row"' : (log.response.status_code && log.response.status_code !== 200) ? ' class="error-row"' : '';
 
         let payloadAccordion = `
-            <button class="accordion-button" id="accordionButton${index}">Show Payload</button>
+            <button class="btn-link collapsed" id="accordionButton${index}">Show Payload</button>
             <div class="accordion-content" id="accordionPayload${index}" style="display: none;">
                 <pre>${JSON.stringify(log.requestPayload, null, 2)}</pre>
             </div>
