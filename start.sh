@@ -15,4 +15,4 @@ done
 echo "PostgreSQL gestartet."
 
 # Starten des Medication Services
-python3 /workspaces/poc-epa-medication/epa_aktenkonto/medication_service/app.py
+#python3 /workspaces/poc-epa-medication/epa_aktenkonto/medication_service/app.py

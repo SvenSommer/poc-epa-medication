@@ -1,10 +1,16 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/postgres
 {
-	"name": "Python 3 Poc Dev Container with FHIR",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
+	"name": "Python 3 Poc Dev Container with FHIR and Postgres Database",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"forwardPorts": [5000, 5001, 5432],
+	"portsAttributes": {
+		"5000": {"label": "Medication Service Frontend Web port", "onAutoForward": "notify"},
+        "5001": {"label": "E-Rezept-Fachdienst Frontend Web port", "onAutoForward": "notify"},
+        "5432": {"label": "PostgreSQL Port", "onAutoForward": "silent"}
+    },
+	"workspaceFolder": "/workspace",
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -12,16 +18,33 @@
 				"MITRE-Health.vscode-language-fsh",
 				"ms-azuretools.vscode-docker",
 				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"charliermarsh.ruff",
+				"mtxr.sqltools",
+				"mtxr.sqltools-driver-pg",
 				"GitHub.copilot",
 				"GitHub.copilot-chat",
-				"ms-python.black-formatter"
+				"ms-python.black-formatter",
+				"bierner.github-markdown-preview"
 			],
 			"settings": {
 				"codfsh.HapiValidator.Executable": "/home/vscode/.fhir/validators/validator_cli.jar",
-				"codfsh.HapiValidator.Settings.SettingsFile": "/home/vscode/.fhir/settings/codfsh-config.yaml"
+				"codfsh.HapiValidator.Settings.SettingsFile": "/home/vscode/.fhir/settings/codfsh-config.yaml",
+				"sqltools.connections": [
+					{
+						"name": "Container database",
+						"driver": "PostgreSQL",
+						"previewLimit": 50,
+						"server": "localhost",
+						"port": 5432,
+						"database": "fhir_resources",
+						"username": "medication_service",
+						"password": "secret_password"
+					}
+				]
 			}
 		}
-	}
+	},
 	
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
@@ -29,7 +52,7 @@
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// This can be used to network with other containers or the host.
-	// "forwardPorts": [5000, 5432],
+
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "pip install --user -r requirements.txt",
@@ -38,5 +61,5 @@
 	// "customizations": {},
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+	"remoteUser": "vscode"
 }
