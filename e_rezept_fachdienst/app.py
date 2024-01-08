@@ -28,9 +28,11 @@ from fhir_creators.models.dispensationInfo import DispensationInfo
 
 logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
-FHIR_OPERATION_URL = os.getenv("FHIR_OPERATION_URL", "http://127.0.0.1:5000")
+# FHIR_OPERATION_URL = os.getenv("FHIR_OPERATION_URL", "http://127.0.0.1:5000/fhir")
+FHIR_OPERATION_URL = "http://127.0.0.1:5000/fhir"
 
 def send_fhir_request(params_resource, operation):
+    print(FHIR_OPERATION_URL)
     endpoint = f"/${operation}"
     try:
         fhir_data = fhir_model_to_json(params_resource)

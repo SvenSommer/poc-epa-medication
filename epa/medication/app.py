@@ -4,7 +4,7 @@ import logging
 from flask import Flask, render_template, request, jsonify
 from fhirapi import fhir_api
 from controller.database import Database
-from managers.resourcemanager import ResourceManager
+from models.bundles import SearchSetBundleModel
 
 logging.basicConfig(level=logging.INFO)
 APPNAME = """
@@ -32,7 +32,7 @@ def resources():
 
 @app.route("/get-fhir-data", methods=["GET"])
 def get_fhir_data():
-    return jsonify(ResourceManager().get_all())
+    return jsonify(SearchSetBundleModel.manager.get_all())
 
 
 def start_app():
