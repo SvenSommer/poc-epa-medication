@@ -10,29 +10,33 @@ from datetime import datetime, timezone
 
 from controller.data import FHIRDataBase
 from exceptions import ResourceIdFail
+from models.searchparams import SearchParam
 
 
 class BundleManager(object):
 
     def __init__(self) -> None:
         self.model_cls = None
+        self._total_count = 0
     
     def get_total_count(self, res_type):
-        total_count = FHIRDataBase(res_type=res_type).count()
-        return total_count
+        return self._total_count
 
-    def search(self, res_type, offset, count):
+    def search(self, res_type, offset, count, **searchparams):
+        _searchparams = []
+        for param_name, value in searchparams.items():
+            _searchparams.append(SearchParam(name=param_name, value=value))
         entries = []
-        resultset = FHIRDataBase(res_type=res_type).search(offset, count)
-        total_count = self.get_total_count(res_type=res_type)
+        self.total_count, resultset = FHIRDataBase(res_type=res_type).search(offset, count, searchparams=_searchparams)
         for data, _type in resultset:
-            entries.append({'res_type': _type, 'data': data})
-            # entries.append(construct_fhir_element(_type, data))
+            entries.append({'res_type': _type, 'data': data, 'search': 'match'})
         model = self.model_cls()
         model.entries = entries
-        model.total = total_count
+        model.total = self.total_count
         model.offset = offset
         model.count = count
+        model.search_params = _searchparams
+
         return model
     
     def get_all(self):

@@ -9,3 +9,4 @@ DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_PORT = os.getenv('DB_PORT', '5432')
 
 SUPORTED_RESOURCE_TYPES = ['Medication', 'MedicationRequest', 'MedicationDispense', 'Practitioner', 'PractitionerRole', 'Organization']
+

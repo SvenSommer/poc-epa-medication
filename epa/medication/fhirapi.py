@@ -29,9 +29,7 @@ def search_resource(resource_type):
     offset = int(request.args.get('_offset', 0))
     count = int(request.args.get('_count', 25))
 
-    search_params = {}
-
-    model = SearchSetBundleModel.manager.search(resource_type, offset=offset, count=count)
+    model = SearchSetBundleModel.manager.search(resource_type, offset=offset, count=count, **request.args)
     model.base_url = f"/fhir/{resource_type}"
 
     return jsonify(model.dict())

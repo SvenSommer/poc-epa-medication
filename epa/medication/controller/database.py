@@ -86,20 +86,37 @@ class Database(object):
             logging.info("Tables created successfully")
 
     def _drop_existing_tables(self, cursor):
-        drop_commands = ["DROP TABLE IF EXISTS Resources CASCADE"]
+        drop_commands = [
+            "DROP TABLE IF EXISTS resourcesearch CASCADE",
+            "DROP TABLE IF EXISTS resources CASCADE"
+        ]
         for command in drop_commands:
             cursor.execute(command)
 
     def _create_new_tables(self, cursor):
         create_commands = [
             """
-            CREATE TABLE IF NOT EXISTS Resources (
-                ID VARCHAR PRIMARY KEY,
-                RES_TYPE VARCHAR,
-                HASH_SHA256 VARCHAR,
-                RES_UPDATED TIMESTAMP,
-                DATA JSONB
+            CREATE TABLE IF NOT EXISTS resources (
+                id VARCHAR PRIMARY KEY,
+                res_type VARCHAR,
+                hash_sha256 VARCHAR,
+                res_updated TIMESTAMP,
+                data JSONB
             )
+            """,
+            """
+            CREATE TABLE resourcesearch(
+                id INT GENERATED ALWAYS AS IDENTITY,
+                resource_id VARCHAR,
+                name VARCHAR(255) NOT NULL,
+                res_type VARCHAR NOT NULL,
+                hash_value VARCHAR,
+                value VARCHAR,
+                PRIMARY KEY(ID),
+                CONSTRAINT fk_customer
+                    FOREIGN KEY(resource_id) 
+                    REFERENCES Resources(id)
+            );
             """
         ]
         for command in create_commands:

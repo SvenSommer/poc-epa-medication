@@ -27,25 +27,6 @@ class ResourceManager(object):
         FHIRDataBase(res_type=model.res_type).create(id=model.id,
                                                updated=model.updated,
                                                data_json=model.json(),
-                                               data_hash=model.hash)
+                                               data_hash=model.hash,
+                                               searchparams=model.searchparams())
         return True
-    
-    def search(self, res_type, offset, count):
-        entries = []
-        resultset = FHIRDataBase(res_type=res_type).search(offset, count)
-        for data, _type in resultset:
-            entries.append(construct_fhir_element(_type, data))
-        return entries
-    
-    def get_all(self):
-        entries = {
-            "Organisations": [],
-            "Medications": [],
-            "Practitioners": [],
-            "MedicationRequests": [],
-            "MedicationDispenses": []
-        }
-        resultset = FHIRDataBase(res_type=None).get_all()
-        for data, _type in resultset:
-            entries['{}s'.format(_type)].append(construct_fhir_element(_type, data).dict())
-        return entries

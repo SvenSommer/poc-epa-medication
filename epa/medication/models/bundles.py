@@ -19,7 +19,7 @@ class SearchSetBundleModel(BaseModel):
         self.total = 0
         self.offset = 0
         self.count = 25
-        self.search_params = {}
+        self.search_params = []
 
     def get_fullurl(self, resource_type, id):
         return '{}/{}'.format(self.base_url, id)
@@ -29,8 +29,8 @@ class SearchSetBundleModel(BaseModel):
 
         # Link zu den aktuellen Ergebnissen
         self_url = f"{self.base_url}?_offset={self.offset}&_count={self.count}"
-        for param, value in self.search_params.items():
-            self_url += f"&{param}={value}"
+        for param in self.search_params:
+            self_url += f"&{param.name}={param.value}"
         links.append(BundleLink(relation="self", url=self_url))
 
         # Link zur nächsten Seite
@@ -55,7 +55,8 @@ class SearchSetBundleModel(BaseModel):
         for data in self.entries:
             resource = construct_fhir_element(data.get('res_type'), data.get('data'))
             fullUrl = self.get_fullurl(data.get('res_type'), resource.id)
-            bundle_entries.append(BundleEntry(resource=resource, fullUrl=fullUrl))
+            entry = BundleEntry(resource=resource, fullUrl=fullUrl, search={'mode': data.get('search')})
+            bundle_entries.append(entry)
         bundle = Bundle(type="searchset", entry=bundle_entries)
         bundle.total = self.total
         bundle.link = self.create_pagination_links()
